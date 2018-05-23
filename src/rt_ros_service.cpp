@@ -234,7 +234,7 @@ void* motor_set_proc(void *arg)
     case rt_dynamixel_msgs::MotorSettingRequest::SET_TORQUE_ENABLE:
         for (int i=0; i<4; i++)
         {
-            dxlDevice[i].setAllTorque(pObj->motorRequest.value);
+           // dxlDevice[i].setAllTorque(pObj->motorRequest.value);
             pObj->motorResponse.result = pObj->motorRequest.mode;
         }
         break;

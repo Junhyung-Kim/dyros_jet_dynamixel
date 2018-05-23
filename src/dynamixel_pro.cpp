@@ -222,9 +222,9 @@
   }
 
   void DynamixelPro::setReturnDelayTime(uint8_t nValue)
-  {
+  {    
     dynamixel::GroupSyncWrite groupDelayWrite(ComPort, packetHandler, returnDelay, size_1);
-
+    int a;
     if(checkControlLoopEnabled("return delay time"))  { return; }
     unsigned int _nParam = 0;
     uint8_t _pbParams[1];
@@ -238,7 +238,8 @@
         }
     }
 
-    groupDelayWrite.txPacket();
+    a=groupDelayWrite.txPacket();
+    std::cout << "sss" << a << std::endl;
     groupDelayWrite.clearParam();
   }
 
@@ -291,7 +292,7 @@
       groupVelWrite.clearParam();
   }
 
-  void DynamixelPro::setAllTorque(uint8_t nValue)
+  void DynamixelPro::setAllTorque( uint8_t nValue)
   {
     dynamixel::GroupSyncWrite groupTorWrite(ComPort, packetHandler,setTor, size_1);
 
@@ -313,20 +314,29 @@
       groupTorWrite.clearParam();
   }
 
-  int DynamixelPro::setPositionGain(int index, uint16_t nPositionPGain, uint8_t* error)
+  int DynamixelPro::setPositionGain(int index, int nPositionPGain, uint8_t* error)
   {
       int posGain;
+      uint16_t pos_gain;
+      pos_gain = nPositionPGain;
       if(checkControlLoopEnabled("position gain"))  { return 1; }
       rttLoopStartTime = get_real_time();
       rttLoopTimeoutTime = rttLoopStartTime + 5e6; // 5ms
-      posGain=packetHandler->write2ByteTxRx(ComPort, vMotorData[index].id, posgain_address, nPositionPGain, error);
+      posGain=packetHandler->write2ByteTxRx(ComPort, vMotorData[index].id, posgain_address, pos_gain, error);
       return posGain;
   }
 
-  int DynamixelPro::setVelocityGain(int index, uint16_t nVelocityIGain, uint16_t nVelocityPGain, uint8_t* error)
+  int DynamixelPro::setVelocityGain(int index, int nVelocityIGain, int nVelocityPGain, uint8_t* error)
   {
       int velGain;
-      uint32_t vel_gain = ((uint32_t)nVelocityPGain << 16)| nVelocityIGain;
+      uint16_t velo_pgain, velo_igain;
+      velo_pgain = nVelocityPGain;
+      velo_igain = nVelocityIGain;
+      std::cout <<"p"<<std::hex<<velo_pgain <<std::endl;
+      std::cout <<"i"<<std::hex<<velo_igain <<std::endl;
+      uint32_t vel_gain = ((uint32_t)velo_pgain << 16)| velo_igain;
+
+      std::cout <<std::hex <<vel_gain << std::endl;
       if(checkControlLoopEnabled("get velocity gain"))  { return 1; }
       rttLoopStartTime = get_real_time();
       rttLoopTimeoutTime = rttLoopStartTime + 5e6; // 5ms
@@ -368,7 +378,6 @@
 
       return setAim;
   }
-
 
   long get_real_time()
   {

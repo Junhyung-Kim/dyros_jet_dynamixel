@@ -84,7 +84,7 @@ dxl_gains dxlGains[4][10] =
         //{31, 15,-1,-1}
     },    {
         // Index: 1
-   //     {2, 15,-1,-1},
+   //     {2, 15, -1, -1},
    //     {4, 15,-1,-1},
    //     {6, 15,-1,-1},
    //     {8, 15,-1,-1},
@@ -211,8 +211,8 @@ void motion_init_proc(bool *isDone)
   tim1.tv_nsec = 50000000;
   for(int c=0; c<2; c++) //2
   {
-    for(int i=0; i<1; i++) //4
-    {
+    for(int i=0; i<4; i++) //4
+    { std::cout << dxlDevice[i].ComPort << std::endl;
       dxlDevice[i].setReturnDelayTime(0);
       nanosleep(&tim,NULL);
       dxlDevice[i].setAllAcceleration(0);
@@ -247,7 +247,7 @@ void motion_init_proc(bool *isDone)
       }
     }
   }
-  for(int i=0;i<1;i++) //4
+  for(int i=0;i<4;i++) //4
       {
 
      //     ROS_INFO("chennal... %d",i);

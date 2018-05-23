@@ -119,9 +119,9 @@ namespace DXL_PRO {
     struct dxl_gains
     {
         int id;
-        uint16_t position_p_gain;
-        uint16_t velocity_p_gain;
-        uint16_t velocity_i_gain;
+        int position_p_gain;
+        int velocity_p_gain;
+        int velocity_i_gain;
     };
     struct dxl_pro_data
         {
@@ -222,8 +222,8 @@ namespace DXL_PRO {
             void setAllAcceleration(uint32_t nValue);
             void setAllVelocity(uint32_t nValue);
             void setAllTorque(uint8_t nValue);
-            int setPositionGain(int index, uint16_t nPositionPGain, uint8_t* error);
-            int setVelocityGain(int index, uint16_t nVelocityIGain, uint16_t nVelocityPGain, uint8_t* error);
+            int setPositionGain(int index, int nPositionPGain, uint8_t* error);
+            int setVelocityGain(int index, int nVelocityIGain, int nVelocityPGain, uint8_t* error);
             int setAimRadian(int index, double radian, uint8_t* error);
             int getHomingOffset(int index, int nValue, long *value, uint8_t* error);
             dxl_pro_data& operator [] (const int& i) { return vMotorData[i]; }
