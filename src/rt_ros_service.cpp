@@ -7,10 +7,10 @@ RTROSPublisher::RTROSPublisher(ros::NodeHandle &nh)
     pubState.initialize(nh.advertise<rt_dynamixel_msgs::JointState>("rt_dynamixel/joint_state",1),
                         1, rt_dynamixel_msgs::JointState());
 
-    pthread_attr_init(&rt_taskPub);
-    pthread_attr_setschedpolicy(&rt_taskPub, SCHED_FIFO);
+    pthread_attr_init(&taskPub);
+    pthread_attr_setschedpolicy(&taskPub, SCHED_FIFO);
     param1.sched_priority = 2;
-    pthread_attr_setschedparam(&rt_taskPub, &param1);
+    pthread_attr_setschedparam(&taskPub, &param1);
 
     jointMsg = pubState.allocate();
 
@@ -30,10 +30,10 @@ RTROSPublisher::RTROSPublisher(ros::NodeHandle &nh)
 
 RTROSSubscriber::RTROSSubscriber(ros::NodeHandle &nh)
 {
-    pthread_attr_init(&rt_taskSub);
-    pthread_attr_setschedpolicy(&rt_taskSub, SCHED_FIFO);
+    pthread_attr_init(&taskSub);
+    pthread_attr_setschedpolicy(&taskSub, SCHED_FIFO);
     param2.sched_priority = 1;
-    pthread_attr_setschedparam(&rt_taskSub, &param2);
+    pthread_attr_setschedparam(&taskSub, &param2);
 
     subSetter.initialize(3,nh,"rt_dynamixel/joint_set");
 }
@@ -107,20 +107,20 @@ bool RTROSMotorSettingService::motorSet(rt_dynamixel_msgs::MotorSettingRequest &
     }
 
 
-    pthread_t rttMotorSetTask;
-    pthread_attr_t rt_motorSet;
+    pthread_t MotorSetTask;
+    pthread_attr_t motorSet;
     struct sched_param param3;
 
-    pthread_attr_init(&rt_motorSet);
-    pthread_attr_setschedpolicy(&rt_motorSet, SCHED_FIFO);
+    pthread_attr_init(&motorSet);
+    pthread_attr_setschedpolicy(&motorSet, SCHED_FIFO);
     param3.sched_priority = 0;
-    pthread_attr_setschedparam(&rt_motorSet, &param3);
+    pthread_attr_setschedparam(&motorSet, &param3);
 
-    pthread_create(&rttMotorSetTask, &rt_motorSet, &motor_set_proc, 0);
+    pthread_create(&MotorSetTask, &motorSet, &motor_set_proc, 0);
     motorResponse.result = -1;
 
     motorRequest = req;
-    pthread_detach(rttMotorSetTask);
+    pthread_detach(MotorSetTask);
 
     res = motorResponse;
     //res.result = req.mode;
@@ -154,8 +154,8 @@ void* publisher_proc(void *arg)
 
         // Data set
         for(i=0;i<4;i++)
-        {//JH
-         //   dxlDevice[i].mutex_acquire();
+        {
+            dxlDevice[i].mutex_acquire();
         }
 
         int _cnt = 0;
@@ -173,8 +173,8 @@ void* publisher_proc(void *arg)
         }
 
         for(i=0;i<4;i++)
-        {//JH
-           // dxlDevice[i].mutex_release();
+        {
+            dxlDevice[i].mutex_release();
         }
 
         pObj->pubState.publish(pObj->jointMsg);
@@ -200,8 +200,8 @@ void* subscribe_proc(void *arg)
             // Data set
             // ROS_INFO("Sub ")
             for(i=0;i<4;i++)
-            {//jh
-              //  dxlDevice[i].mutex_acquire();
+            {
+                dxlDevice[i].mutex_acquire();
             }
 
             for(i=0;i< (int)rcvMsg->id.size();i++)
@@ -213,8 +213,8 @@ void* subscribe_proc(void *arg)
             }
 
             for(i=0;i<4;i++)
-            {//JH
-              //  dxlDevice[i].mutex_release();
+            {
+                dxlDevice[i].mutex_release();
             }
         }
     }
@@ -234,7 +234,7 @@ void* motor_set_proc(void *arg)
     case rt_dynamixel_msgs::MotorSettingRequest::SET_TORQUE_ENABLE:
         for (int i=0; i<4; i++)
         {
-           // dxlDevice[i].setAllTorque(pObj->motorRequest.value);
+            dxlDevice[i].setAllTorque(pObj->motorRequest.value);
             pObj->motorResponse.result = pObj->motorRequest.mode;
         }
         break;

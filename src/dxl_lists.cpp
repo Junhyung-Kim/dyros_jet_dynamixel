@@ -229,13 +229,10 @@ void motion_init_proc(bool *isDone)
           if(dxlGains[i][j].position_p_gain  < 0) continue;
           if(dxlGains[i][j].velocity_i_gain  < 0) continue;
           if(dxlGains[i][j].velocity_p_gain  < 0) continue;
-\
-          dxlDevice[i].rttLoopStartTime = get_real_time();
-          dxlDevice[i].rttLoopTimeoutTime = dxlDevice[i].rttLoopStartTime + 5e6; // 5ms
+
           dxlDevice[i].setPositionGain(j,dxlGains[i][j].position_p_gain,&err);
           nanosleep(&tim,NULL);
-          dxlDevice[i].rttLoopStartTime = get_real_time();
-          dxlDevice[i].rttLoopTimeoutTime = dxlDevice[i].rttLoopStartTime + 5e6; // 5ms
+
           dxlDevice[i].setVelocityGain(j,dxlGains[i][j].velocity_i_gain,dxlGains[i][j].velocity_p_gain, &err);
           nanosleep(&tim,NULL);
         }
@@ -253,9 +250,7 @@ void motion_init_proc(bool *isDone)
      //     ROS_INFO("chennal... %d",i);
           for(int c=0; c<10;c++)
           {
-              dxlDevice[i].rttLoopStartTime = get_real_time();
-              dxlDevice[i].rttLoopTimeoutTime = dxlDevice[i].rttLoopStartTime + 5e6; // 10ms
-              nRecv[i] = dxlDevice[i].getAllStatus();
+               nRecv[i] = dxlDevice[i].getAllStatus();
               if(nRecv[i] == dxlDevice[i].getMotorNum())
               {
                   isUpdateComplete[i] = true;

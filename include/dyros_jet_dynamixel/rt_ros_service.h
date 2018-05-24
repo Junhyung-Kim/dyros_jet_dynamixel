@@ -38,8 +38,8 @@ void* motor_set_proc(void *arg);
 
 class RTROSPublisher
 {
-    pthread_t rttTaskObject;
-    pthread_attr_t rt_taskPub;
+    pthread_t TaskObject;
+    pthread_attr_t taskPub;
     struct sched_param param1;
 public:
     rosrt::Publisher<rt_dynamixel_msgs::JointState> pubState;
@@ -48,26 +48,26 @@ public:
 
     RTROSPublisher(ros::NodeHandle &nh);
     virtual ~RTROSPublisher()
-    {        pthread_detach(rttTaskObject);    }
+    {        pthread_detach(TaskObject);    }
     void start()
-    {        pthread_create(&rttTaskObject, &rt_taskPub, &publisher_proc, 0);    }
+    {        pthread_create(&TaskObject, &taskPub, &publisher_proc, 0);    }
 
 };
 
 class RTROSSubscriber
 {
-    pthread_t rttSubscriber;
-    pthread_attr_t rt_taskSub;
+    pthread_t Subscriber;
+    pthread_attr_t taskSub;
     struct sched_param param2;
 public:
     rosrt::Subscriber<rt_dynamixel_msgs::JointSet> subSetter;
 
     RTROSSubscriber(ros::NodeHandle &nh);
     virtual ~RTROSSubscriber()
-    {        pthread_detach(rttSubscriber);    }
+    {        pthread_detach(Subscriber);    }
 
     void start()
-    {        pthread_create(&rttSubscriber, &rt_taskSub, &subscribe_proc, 0);    }
+    {        pthread_create(&Subscriber, &taskSub, &subscribe_proc, 0);    }
 
 };
 

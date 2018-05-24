@@ -190,12 +190,15 @@ namespace DXL_PRO {
             int nMotorNum;                  ///< The number of motos
             int a;
 
+            pthread_t TaskObject;          ///< Real-time task object (pthread)
+            pthread_attr_t taskObj;
+
             bool checkControlLoopEnabled(const char *szSetName);
 
         public:
 
-            long rttLoopStartTime;         ///< Control loop start time.
-            long rttLoopTimeoutTime;
+            pthread_mutex_t DataMutex;
+
             int nIndex;
             bool bControlLoopEnable;        ///< For enable control loop
             bool bControlWriteEnable;       ///< For enable writing angles
@@ -204,14 +207,29 @@ namespace DXL_PRO {
             DynamixelPro(int index) :
                 dynamixel_packet(), nIndex(index), bControlLoopEnable(false), bControlWriteEnable(false)
                 {
-              /*   char threadName[40] = {0, };
+                        char threadName[40] = {0, };
                         char threadName2[40] = {0, };
                         char mutexName[40] = {0, };
                         sprintf(threadName,"dxl ctr thr %d", index);
-                        sprintf(mutexName,"dxl dat mtx %d", index);*/
+                        sprintf(mutexName,"dxl dat mtx %d", index);
+                        pthread_mutex_init(&DataMutex, NULL);
+
                 }
 
+            ~DynamixelPro()
+            {
+              pthread_mutex_destroy(&DataMutex);
+            }
+
+            void mutex_acquire()
+            { pthread_mutex_lock(&DataMutex); }
+
+            void mutex_release()
+            { pthread_mutex_unlock(&DataMutex); }
+
             dxl_pro_data vMotorData[10];
+            dxl_pro_data& operator [] (const int& i) { return vMotorData[i]; }
+
             //std::vector<dxl_pro_data> vMotorData;   ///< Data of all motors
             void setIDList(int motorNum, dxl_pro_data *motorList);
             void dxl_control();
@@ -226,7 +244,7 @@ namespace DXL_PRO {
             int setVelocityGain(int index, int nVelocityIGain, int nVelocityPGain, uint8_t* error);
             int setAimRadian(int index, double radian, uint8_t* error);
             int getHomingOffset(int index, int nValue, long *value, uint8_t* error);
-            dxl_pro_data& operator [] (const int& i) { return vMotorData[i]; }
+
     };
 }
 

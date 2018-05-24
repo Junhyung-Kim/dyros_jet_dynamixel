@@ -10,6 +10,7 @@ add_compile_options(-std=c++11)
 find_package(catkin REQUIRED COMPONENTS
   roscpp
   rospy
+  rosrt
   std_msgs
   dynamixel_sdk
   rt_dynamixel_msgs
@@ -163,14 +164,14 @@ add_library(rt_ros_service STATIC src/rt_ros_service.cpp)
 #  -lpthread
 #)
  target_link_libraries(${PROJECT_NAME}_node
-#   ${catkin_LIBRARIES}
+   ${catkin_LIBRARIES}
     dynamixel_pro
     dxl_lists
     rt_ros_service
 #    serial_port
  )
  target_link_libraries(dxl_lists
-#  ${catkin_LIBRARIES}
+  ${catkin_LIBRARIES}
    -lpthread
    dynamixel_pro
 #   serial_port

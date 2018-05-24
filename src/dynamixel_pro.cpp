@@ -203,8 +203,6 @@
           if(bControlLoopEnable)
           {
               bControlLoopProcessing = true;
-              rttLoopStartTime = get_real_time();
-              rttLoopTimeoutTime = rttLoopStartTime + (47e5); // 90%
 
               if(bControlWriteEnable)
               {
@@ -320,8 +318,6 @@
       uint16_t pos_gain;
       pos_gain = nPositionPGain;
       if(checkControlLoopEnabled("position gain"))  { return 1; }
-      rttLoopStartTime = get_real_time();
-      rttLoopTimeoutTime = rttLoopStartTime + 5e6; // 5ms
       posGain=packetHandler->write2ByteTxRx(ComPort, vMotorData[index].id, posgain_address, pos_gain, error);
       return posGain;
   }
@@ -338,8 +334,6 @@
 
       std::cout <<std::hex <<vel_gain << std::endl;
       if(checkControlLoopEnabled("get velocity gain"))  { return 1; }
-      rttLoopStartTime = get_real_time();
-      rttLoopTimeoutTime = rttLoopStartTime + 5e6; // 5ms
       velGain = packetHandler->write4ByteTxRx(ComPort, vMotorData[index].id, velgain_address, vel_gain, error);
       return velGain;
   }
@@ -349,8 +343,6 @@
       uint32_t *data_1;
       int getHomeOffset;
       if(checkControlLoopEnabled("homing offset"))  { return 1; }
-      rttLoopStartTime = get_real_time();
-      rttLoopTimeoutTime = rttLoopStartTime + 5e6; // 5ms
       getHomeOffset = packetHandler->read4ByteTxRx(ComPort, vMotorData[index].id, getHomeOffset_address, data_1, error);
       value = (long *)data_1;
       return getHomeOffset;//ReadDWord(vMotorData[index].id, 13, value, error);
@@ -360,8 +352,6 @@
   {
       int setAim;
       if(checkControlLoopEnabled("aim radian"))  { return 1; }
-      rttLoopStartTime = get_real_time();
-      rttLoopTimeoutTime = rttLoopStartTime + 5e6; // 5ms
 
       vMotorData[index].aim_radian = radian;
 
