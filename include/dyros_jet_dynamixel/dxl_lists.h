@@ -5,6 +5,8 @@
 
 #include "dynamixel_pro.h"
 #include <iostream>
+#include <unistd.h>
+
 
 using namespace DXL_PRO;
 
@@ -19,5 +21,6 @@ bool dxl_initailize();
 void make_inverse_access_data();
 bool dynamixel_motor_init();
 void motion_init_proc(bool *isDone);
+void motor_test();
 
 #endif

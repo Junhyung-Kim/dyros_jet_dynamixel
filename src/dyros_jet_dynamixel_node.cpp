@@ -1,33 +1,35 @@
 #include <ros/ros.h>
+#include <realtime_tools/realtime_publisher.h>
 #include <std_msgs/String.h>
 #include <stdio.h>
+
+#include "dynamixel_pro.h"
+#include "rt_dynamixel_msgs/JointState.h"
+#include "rt_dynamixel_msgs/JointSet.h"
+#include "rt_dynamixel_msgs/ModeSetting.h"
+#include "rt_dynamixel_msgs/MotorSetting.h"
+
 #include "dxl_lists.h"
 #include "rt_ros_service.h"
 
 int main(int argc, char **argv)
 {
+//  ros::init(argc, argv, "dyros_jet_dynamixel_node");
+//  ros::NodeHandle nh;
+
   if(dxl_initailize() == false) return -1;
 
   if(dynamixel_motor_init() == false) return -1;
 
+  //motor_test();
 
-//   ros::init(argc, argv, “dyros_jet_dynamixel_node”);
-//   ros::NodeHandle nh;
- //  ROS_INFO(“ssss”);
- /*  ros::Publisher chatter_pub = nh.advertise<std_msgs::String>(“say_hello_world”, 1000);
-   ros::Rate loop_rate(10);
-   int count = 0;
-   while (ros::ok())
-   {
-       std_msgs::String msg;
-       std::stringstream ss;
-       ss << “hello world” << count;
-       msg.data = ss.str();
-       ROS_INFO(“%s”, msg.data.c_str());
-       chatter_pub.publish(msg);
-       ros::spinOnce();
-       loop_rate.sleep();
-       ++count;
-   }*/
-   return 0;
+
+  /*
+  RTROSPublisher rtRosPublisher(nh);
+  RTROSSubscriber rtRosSubscriber(nh);
+  RTROSMotorSettingService rtRosMotorSettingService(nh);
+*/
+//  ros::spin();
+
+  return 0;
 }

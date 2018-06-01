@@ -10,7 +10,7 @@ add_compile_options(-std=c++11)
 find_package(catkin REQUIRED COMPONENTS
   roscpp
   rospy
-  rosrt
+  realtime_tools
   std_msgs
   dynamixel_sdk
   rt_dynamixel_msgs
@@ -146,7 +146,7 @@ add_library(rt_ros_service STATIC src/rt_ros_service.cpp)
 ## Declare a C++ executable
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
- add_executable(${PROJECT_NAME}_node src/dyros_jet_dynamixel_node.cpp)
+ add_executable(dyros_jet_dynamixel_node src/dyros_jet_dynamixel_node.cpp)
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
@@ -156,25 +156,17 @@ add_library(rt_ros_service STATIC src/rt_ros_service.cpp)
 
 ## Add cmake target dependencies of the executable
 ## same as for the library above
- add_dependencies(${PROJECT_NAME}_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+# add_dependencies(${PROJECT_NAME}_node ${${PROJECT_NAME}_EXPORTED_TARGETS} #${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries to link a library or executable target against
 #target_link_libraries(serial_port
 #  ${catkin_LIBRARIES}
 #  -lpthread
 #)
- target_link_libraries(${PROJECT_NAME}_node
-   ${catkin_LIBRARIES}
-    dynamixel_pro
-    dxl_lists
-    rt_ros_service
-#    serial_port
- )
  target_link_libraries(dxl_lists
   ${catkin_LIBRARIES}
    -lpthread
    dynamixel_pro
-#   serial_port
  )
 
 target_link_libraries(rt_ros_service
@@ -188,6 +180,14 @@ target_link_libraries(dynamixel_pro
    -lpthread
    -lrt
  )
+ target_link_libraries(${PROJECT_NAME}_node
+   ${catkin_LIBRARIES}
+    -lpthread
+    dynamixel_pro
+    dxl_lists
+    rt_ros_service
+ )
+
 set(CMAKE_BUILD_TYPE Debug)
 
 #############

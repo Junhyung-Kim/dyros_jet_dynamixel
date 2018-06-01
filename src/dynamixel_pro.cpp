@@ -153,8 +153,6 @@
               _pbParams[_nParam++] = DXL_LOBYTE(DXL_HIWORD(nH42Position));
               _pbParams[_nParam++] = DXL_HIBYTE(DXL_HIWORD(nH42Position));
           }
-          std::cout << vMotorData[i].id << std::endl;
-          std::cout << _pbParams << std::endl;
           groupposwrite.addParam(vMotorData[i].id, _pbParams);
       }
       groupposwrite.txPacket();
@@ -165,14 +163,18 @@
       int error;
       int nReceived = 0;
       bool dxl_getdata_result;
+        struct timespec tim;
 
+    //  std::cout << "nMotor" << nMotorNum <<std::endl;
       for (int i = 0; i < nMotorNum; i++)
       {
-          groupstatread.addParam(vMotorData[i].id);
+        groupstatread.addParam(vMotorData[i].id);
       }
-
       error = groupstatread.txRxPacket();
-       for (int i = 0; i< nMotorNum ;i++)
+ //     std::cout << "err" << (int)error << std::endl;
+
+     // mutex_acquire();
+   /*     for (int i = 0; i< nMotorNum ;i++)
       {
          uint8_t error1[1];
 
@@ -192,8 +194,9 @@
          else
          {
          }
-      }
-      return nReceived;
+      }*/
+  //    mutex_release();
+      return error;
   }
 
   void DynamixelPro::dxl_control()
@@ -328,11 +331,8 @@
       uint16_t velo_pgain, velo_igain;
       velo_pgain = nVelocityPGain;
       velo_igain = nVelocityIGain;
-      std::cout <<"p"<<std::hex<<velo_pgain <<std::endl;
-      std::cout <<"i"<<std::hex<<velo_igain <<std::endl;
-      uint32_t vel_gain = ((uint32_t)velo_pgain << 16)| velo_igain;
-
-      std::cout <<std::hex <<vel_gain << std::endl;
+      uint32_t vel_gain = ((uint32_t)velo_igain << 16)| velo_pgain;
+      std::cout << "Setvel" << std::endl;
       if(checkControlLoopEnabled("get velocity gain"))  { return 1; }
       velGain = packetHandler->write4ByteTxRx(ComPort, vMotorData[index].id, velgain_address, vel_gain, error);
       return velGain;
@@ -352,9 +352,7 @@
   {
       int setAim;
       if(checkControlLoopEnabled("aim radian"))  { return 1; }
-
       vMotorData[index].aim_radian = radian;
-
       uint32_t position;
       if (vMotorData[index].type == H54)
       {
@@ -365,8 +363,19 @@
           position = (uint32_t)(radian * RAD_TO_H42);
       }
       setAim = packetHandler->write4ByteTxRx(ComPort, vMotorData[index].id, setPosition_address, position, error);
-
       return setAim;
+  }
+
+  int DynamixelPro::setStatusReturn()
+  {
+
+    for (int i = 0; i<2; i++)
+    {
+        for (int j = 0; j<nMotorNum; j++)
+        {
+            packetHandler->write1ByteTxOnly(ComPort, vMotorData[j].id, statusReturn, 1);
+        }
+    }
   }
 
   long get_real_time()

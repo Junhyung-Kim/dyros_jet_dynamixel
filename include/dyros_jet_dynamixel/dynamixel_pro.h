@@ -11,13 +11,14 @@
 #include "dynamixel_sdk/group_sync_write.h"
 #include "dynamixel_sdk/group_sync_read.h"
 
-#define BAUDRATE        57600
+#define BAUDRATE        3000000
 #define posgain_address  594
 #define velgain_address  586
 #define setPosition_address 596
 #define getHomeOffset_address 13
 #define pres_pos 611
 #define returnDelay 9
+#define statusReturn 891
 #define setAccel 606
 #define setVel 600
 #define setTor 562
@@ -99,7 +100,7 @@ namespace DXL_PRO {
         };
 
 
-    const int H54_180_DEG = 250950; // H54 Resolution per 180 degree
+        const int H54_180_DEG = 250950; // H54 Resolution per 180 degree
         const int H42_180_DEG = 151900; // H42 Resolution per 180 degree
 
         const double H54_GEAR_RATIO = 502.0;
@@ -244,6 +245,7 @@ namespace DXL_PRO {
             int setVelocityGain(int index, int nVelocityIGain, int nVelocityPGain, uint8_t* error);
             int setAimRadian(int index, double radian, uint8_t* error);
             int getHomingOffset(int index, int nValue, long *value, uint8_t* error);
+            int setStatusReturn();
 
     };
 }

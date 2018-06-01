@@ -25,10 +25,12 @@ dxl_pro_data dxlLists[4][10] = {
     {
         // Index: 0: 1-Right Upper body
           {1, H54},
-     //   {3, H54},
-     //   {5, H54},     // Warning
-     //   {7, H54},
-     //   {9, H54},
+          {3, H54},
+         // {5, H54},     // Warning
+    //      {7, H54},
+    //      {9, H54},
+    //      {11, H54},
+    //      {13, H54}
      //   {11, H42},
      //  {13, H42},
         //{31, H42}
@@ -74,11 +76,11 @@ dxl_gains dxlGains[4][10] =
 {
     {
         // Index: 0
-        {1, 15,500,50},
-   //     {3, 15,-1,-1},
-   //     {5, 15,-1,-1},
-   //     {7, 15,-1,-1},
-   //     {9, 15,-1,-1},
+        {1, 15,-1,-1},
+        {3, 15,-1,-1},
+      //  {5, 15,-1,-1},
+     //   {7, 15,-1,-1},
+    //    {9, 15,-1,-1},
    //     {11, 15,-1,-1},
    //     {13, 15,-1,-1},
         //{31, 15,-1,-1}
@@ -193,7 +195,9 @@ dxl_pro_data& dxl_from_id(int id)
 
 
 bool dynamixel_motor_init()
-{   bool isDone;
+{
+    bool isDone;
+    uint8_t err;
     motion_init_proc(&isDone);
     return isDone;
 
@@ -203,17 +207,21 @@ void motion_init_proc(bool *isDone)
 {
   *isDone = true;
   bool isUpdateComplete[4] = {false, };
+  int error;
   int nRecv[4] = {0, };
-  struct timespec tim, tim1;
+  struct timespec tim, tim1, tim2;
   tim.tv_sec = 0;
   tim.tv_nsec = 5000000;
   tim1.tv_sec = 0;
   tim1.tv_nsec = 50000000;
+  tim2.tv_sec = 0;
+  tim2.tv_nsec = 500000000;
+
   for(int c=0; c<2; c++) //2
   {
     for(int i=0; i<4; i++) //4
     { std::cout << dxlDevice[i].ComPort << std::endl;
-      dxlDevice[i].setReturnDelayTime(0);
+      dxlDevice[i].setReturnDelayTime(40);
       nanosleep(&tim,NULL);
       dxlDevice[i].setAllAcceleration(0);
       nanosleep(&tim,NULL);
@@ -244,13 +252,16 @@ void motion_init_proc(bool *isDone)
       }
     }
   }
-  for(int i=0;i<4;i++) //4
+  for(int i=0;i<1;i++) //4
       {
-
+          dxlDevice[i].setStatusReturn();
      //     ROS_INFO("chennal... %d",i);
           for(int c=0; c<10;c++)
           {
-               nRecv[i] = dxlDevice[i].getAllStatus();
+               error = dxlDevice[i].getAllStatus();
+           //    dxlDevice[i].setStatusReturn();
+              std::cout << "errss" << error << std::endl;
+              nanosleep(&tim2,NULL);
               if(nRecv[i] == dxlDevice[i].getMotorNum())
               {
                   isUpdateComplete[i] = true;
@@ -268,8 +279,7 @@ void motion_init_proc(bool *isDone)
       for(int i=0;i<4;i++)
           if(isUpdateComplete[i] == false)
           {
-              *isDone = false;
-
+            *isDone = false;
              return ;
           }
 
@@ -277,8 +287,40 @@ void motion_init_proc(bool *isDone)
       for(int i=0;i<4; i++)
           for(int j=0;j<dxlDevice[i].getMotorNum(); j++)
           {
-              dxlDevice[i][j].aim_radian = dxlDevice[i][j].position_rad();
+                dxlDevice[i][j].aim_radian = dxlDevice[i][j].position_rad();
+         //     std::cout << "i " << i << "j " << j << "dxlDevice" << dxlDevice[i][j].position_rad() << std::endl;
           }
+
       *isDone = true;
 
 }
+
+void motor_test()
+{
+  std::cout << "ASdfas" <<std::endl;
+  uint8_t err;
+  double pdRadians[10] = {0,0,0,0,0,0,0,0,0,0};
+  double goal_pdRadians[10] = {0, };
+  double goal_pos, init_pos;
+/*  dxlDevice[0].setAllTorque(0);
+  for (int i=0; i<dxlDevice[0].getMotorNum(); i++)
+  {
+    pdRadians[i] = dxlDevice[0][i].aim_radian;
+  }
+*/
+  for(double i = 0; i<400 ; i++)
+  {
+    for(int j=0; j<10; j++)
+    {
+      goal_pdRadians[j] = pdRadians[j] + i/480;
+    }
+
+   // dxlDevice[0].setEachRadian(goal_pdRadians);
+
+    std::cout << "motorPresentpos" << goal_pdRadians[2] << std::endl;
+
+    usleep(5000);
+  }
+
+}
+

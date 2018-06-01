@@ -1,30 +1,28 @@
     #include "rt_ros_service.h"
+    #include <iostream>
 
 //RTIME control_period = 25e5;
 
 RTROSPublisher::RTROSPublisher(ros::NodeHandle &nh)
 {
-    pubState.initialize(nh.advertise<rt_dynamixel_msgs::JointState>("rt_dynamixel/joint_state",1),
-                        1, rt_dynamixel_msgs::JointState());
+    pubState.init(nh,"rt_dynamixel/joint_state",1);
 
     pthread_attr_init(&taskPub);
     pthread_attr_setschedpolicy(&taskPub, SCHED_FIFO);
     param1.sched_priority = 2;
     pthread_attr_setschedparam(&taskPub, &param1);
 
-    jointMsg = pubState.allocate();
-
-    jointMsg->id.resize(nTotalMotors);
-    jointMsg->angle.resize(nTotalMotors);
-    jointMsg->velocity.resize(nTotalMotors);
-    jointMsg->current.resize(nTotalMotors);
-    jointMsg->updated.resize(nTotalMotors);
+    pubState.msg_.id.resize(nTotalMotors);
+    pubState.msg_.angle.resize(nTotalMotors);
+    pubState.msg_.velocity.resize(nTotalMotors);
+    pubState.msg_.current.resize(nTotalMotors);
+    pubState.msg_.updated.resize(nTotalMotors);
 
     int _cnt=0;
     for(int i=0;i<4;i++)
         for(int j=0;j<nDXLCount[i];j++)
         {
-            jointMsg->id[_cnt++] = dxlLists[i][j].id;
+           pubState.msg_.id[_cnt++] = dxlLists[i][j].id;
         }
 }
 
@@ -35,9 +33,15 @@ RTROSSubscriber::RTROSSubscriber(ros::NodeHandle &nh)
     param2.sched_priority = 1;
     pthread_attr_setschedparam(&taskSub, &param2);
 
-    subSetter.initialize(3,nh,"rt_dynamixel/joint_set");
+ //   subSetter.initialize(3,nh,"rt_dynamixel/joint_set");
+     subSetter = nh.subscribe("rt_dynamixel/joint_set",3,&RTROSSubscriber::JointCallback, this);
 }
 
+void RTROSSubscriber::JointCallback(const rt_dynamixel_msgs::JointSetConstPtr msg)
+{
+     recMsg = msg;
+     std::cout << "joint" << recMsg << std::endl;
+}
 
 RTROSMotorSettingService::RTROSMotorSettingService(ros::NodeHandle &nh)
 {
@@ -164,10 +168,10 @@ void* publisher_proc(void *arg)
             for(j=0;j<nDXLCount[i];j++)
             {
                 // SI
-                pObj->jointMsg->angle[_cnt] = dxlDevice[i][j].position_rad();
-                pObj->jointMsg->velocity[_cnt] = dxlDevice[i][j].velocity_radsec();
-                pObj->jointMsg->current[_cnt] = dxlDevice[i][j].current_amp();
-                pObj->jointMsg->updated[_cnt] = dxlDevice[i][j].updated;
+                pObj->pubState.msg_.angle[_cnt] = dxlDevice[i][j].position_rad();
+                pObj->pubState.msg_.velocity[_cnt] = dxlDevice[i][j].velocity_radsec();
+                pObj->pubState.msg_.current[_cnt] = dxlDevice[i][j].current_amp();
+                pObj->pubState.msg_.updated[_cnt] = dxlDevice[i][j].updated;
                 _cnt++;
             }
         }
@@ -177,7 +181,9 @@ void* publisher_proc(void *arg)
             dxlDevice[i].mutex_release();
         }
 
-        pObj->pubState.publish(pObj->jointMsg);
+        if (pObj->pubState.trylock()) {
+            pObj->pubState.unlockAndPublish();
+          }
     }
 }
 
@@ -193,8 +199,8 @@ void* subscribe_proc(void *arg)
     while(1)
     {
         dynamixel_packet::wait_period(&info2); //wait for next cycle
-
-        rt_dynamixel_msgs::JointSetConstPtr rcvMsg = rtsub->subSetter.poll();
+        rt_dynamixel_msgs::JointSetConstPtr rcvMsg = rtsub->recMsg;
+        std::cout << "jointtask" << rcvMsg << std::endl;
         if(rcvMsg) // if message recieved ( if not rcvMsg == NULL )
         {
             // Data set

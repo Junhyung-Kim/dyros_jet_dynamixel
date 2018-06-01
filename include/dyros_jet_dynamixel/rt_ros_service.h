@@ -4,7 +4,7 @@
 
 
 #include <ros/ros.h>
-#include <rosrt/rosrt.h>
+#include <realtime_tools/realtime_publisher.h>
 
 #include <pthread.h>
 
@@ -42,9 +42,7 @@ class RTROSPublisher
     pthread_attr_t taskPub;
     struct sched_param param1;
 public:
-    rosrt::Publisher<rt_dynamixel_msgs::JointState> pubState;
-    rt_dynamixel_msgs::JointStatePtr jointMsg;
-
+    realtime_tools::RealtimePublisher<rt_dynamixel_msgs::JointState> pubState;
 
     RTROSPublisher(ros::NodeHandle &nh);
     virtual ~RTROSPublisher()
@@ -59,9 +57,13 @@ class RTROSSubscriber
     pthread_t Subscriber;
     pthread_attr_t taskSub;
     struct sched_param param2;
-public:
-    rosrt::Subscriber<rt_dynamixel_msgs::JointSet> subSetter;
 
+private:
+    void JointCallback(const rt_dynamixel_msgs::JointSetConstPtr msg);
+
+public:
+    ros::Subscriber subSetter;
+    rt_dynamixel_msgs::JointSetConstPtr recMsg;
     RTROSSubscriber(ros::NodeHandle &nh);
     virtual ~RTROSSubscriber()
     {        pthread_detach(Subscriber);    }
@@ -70,8 +72,6 @@ public:
     {        pthread_create(&Subscriber, &taskSub, &subscribe_proc, 0);    }
 
 };
-
-
 
 class RTROSMotorSettingService
 {
