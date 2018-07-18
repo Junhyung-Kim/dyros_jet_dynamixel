@@ -1,11 +1,12 @@
-
 #ifndef DYNAMIXEL_PRO_H_
 #define DYNAMIXEL_PRO_H_
 
 #include <sys/time.h>
 #include <sys/signal.h>
+#include <sys/timerfd.h>
 #include <stdint.h>
 #include <pthread.h>
+#include <ros/ros.h>
 #include "dynamixel_sdk/port_handler_linux.h"
 #include "dynamixel_sdk/protocol2_packet_handler.h"
 #include "dynamixel_sdk/group_sync_write.h"
@@ -29,15 +30,20 @@
 
 using namespace dynamixel;
 
-struct periodic_info {
-
+struct periodic_info
+{
+  /*
   int sig;
-
   sigset_t alarm_sig;
+  */
+
+  int timer_fd;
+  unsigned long long wakeups_missed;
 
 };
 
-long get_real_time();
+unsigned long get_real_time();
+void* dxl_control(void *parent);
 
 namespace DXL_PRO {
     enum dxl_pro_type { H54 = 1, H42 = 2};
@@ -48,19 +54,7 @@ namespace DXL_PRO {
             double PacketStartTime;
             double PacketWaitTime;
             double ByteTransferTime;
-/*
-            int GetBaudrate(int baud_num);
 
-            virtual bool IsPacketTimeout();
-
-            unsigned short UpdateCRC(unsigned short crc_accum, unsigned char *data_blk_ptr, unsigned short data_blk_size);
-            void AddStuffing(unsigned char *packet);
-            void RemoveStuffing(unsigned char *packet);
-
-            int TxP acket(unsigned char *txpacket);
-            int RxPacket*(unsigned char *rxpacket);
-            int TxRxPacket(unsigned char *txpacket, unsigned char *rxpacket, int *error);
-*/
         public:
             PortHandler *ComPort;
             PacketHandler *packetHandler;
@@ -72,30 +66,8 @@ namespace DXL_PRO {
 
             bool Connect();
             void Disconnect();
-  /*          bool SetBaudrate(int baud);
-
-            int Ping(int id, int *error);
-            int Ping(int id, PingInfo *info, int *error);
-            int BroadcastPing(std::vector<PingInfo>& vec_info);
-            int Reboot(int id, int *error);
-            int FactoryReset(int id, int option, int *error);
-
-            int Read(int id, int address, int length, unsigned char* data, int *error);
-            int ReadByte(int id, int address, int *value, int *error);
-            int ReadWord(int id, int address, int *value, int *error);
-            int ReadDWord(int id, int address, long *value, int *error);
-
-            int Write(int id, int address, int length, unsigned char* data, int *error);
-            int WriteByte(int id, int address, int value, int *error);
-            int WriteWord(int id, int address, int value, int *error);
-            int WriteDWord(int id, int address, long value, int *error);
-*/
-     //       int SyncRead(int start_addr, int data_length, unsigned char id_length, unsigned char *read_ids, SyncReadData* rxdata, unsigned char *received);
-            //void SyncDataFree(unsigned char id_length, PSyncData rxdata);
-/*
-            int BulkRead(std::vector<BulkReadData>& data);
-*/
-            static int make_periodic(int unsigned period, struct periodic_info *info);
+            //static int make_periodic(int unsigned period, struct periodic_info *info);
+            static int make_periodic(unsigned int period, struct periodic_info *info);
             static void wait_period(struct periodic_info *info);
         };
 
@@ -191,8 +163,9 @@ namespace DXL_PRO {
             int nMotorNum;                  ///< The number of motos
             int a;
 
-            pthread_t TaskObject;          ///< Real-time task object (pthread)
+            pthread_t TaskObject;        ///< Real-time task object (pthread)
             pthread_attr_t taskObj;
+            struct sched_param param4;
 
             bool checkControlLoopEnabled(const char *szSetName);
 
@@ -204,6 +177,8 @@ namespace DXL_PRO {
             bool bControlLoopEnable;        ///< For enable control loop
             bool bControlWriteEnable;       ///< For enable writing angles
             bool bControlLoopProcessing;
+            unsigned long LoopStartTime;
+            unsigned long LoopTimeoutTime;
 
             DynamixelPro(int index) :
                 dynamixel_packet(), nIndex(index), bControlLoopEnable(false), bControlWriteEnable(false)
@@ -214,7 +189,9 @@ namespace DXL_PRO {
                         sprintf(threadName,"dxl ctr thr %d", index);
                         sprintf(mutexName,"dxl dat mtx %d", index);
                         pthread_mutex_init(&DataMutex, NULL);
-
+                        pthread_attr_init(&taskObj);
+                        param4.sched_priority = 0 ;
+                        pthread_attr_setschedparam(&taskObj, &param4);
                 }
 
             ~DynamixelPro()
@@ -228,12 +205,16 @@ namespace DXL_PRO {
             void mutex_release()
             { pthread_mutex_unlock(&DataMutex); }
 
+            void startThread()
+            {
+               pthread_create(&TaskObject, &taskObj, &dxl_control, this);
+            }
+
             dxl_pro_data vMotorData[10];
             dxl_pro_data& operator [] (const int& i) { return vMotorData[i]; }
 
             //std::vector<dxl_pro_data> vMotorData;   ///< Data of all motors
             void setIDList(int motorNum, dxl_pro_data *motorList);
-            void dxl_control();
             void setEachRadian(double* pdRadians);
             int getAllStatus();
             int getMotorNum() { return nMotorNum; }

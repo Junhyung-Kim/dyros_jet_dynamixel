@@ -14,22 +14,28 @@
 
 int main(int argc, char **argv)
 {
-//  ros::init(argc, argv, "dyros_jet_dynamixel_node");
-//  ros::NodeHandle nh;
+  ros::init(argc, argv, "dyros_jet_dynamixel_node");
+  ros::NodeHandle nh;
 
   if(dxl_initailize() == false) return -1;
 
-  if(dynamixel_motor_init() == false) return -1;
+ // if(dynamixel_motor_init() == false) return -1;
 
-  //motor_test();
+ // motor_test();
 
-
-  /*
   RTROSPublisher rtRosPublisher(nh);
   RTROSSubscriber rtRosSubscriber(nh);
   RTROSMotorSettingService rtRosMotorSettingService(nh);
+
+  rtRosPublisher.start();
+  rtRosSubscriber.start();
+/*
+  for(int i=0; i<4; i++)
+  {
+     dxlDevice[i].bControlLoopEnable = true;
+  }
 */
-//  ros::spin();
+  ros::spin();
 
   return 0;
 }

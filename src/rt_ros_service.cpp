@@ -1,4 +1,4 @@
-    #include "rt_ros_service.h"
+      #include "rt_ros_service.h"
     #include <iostream>
 
 //RTIME control_period = 25e5;
@@ -17,7 +17,7 @@ RTROSPublisher::RTROSPublisher(ros::NodeHandle &nh)
     pubState.msg_.velocity.resize(nTotalMotors);
     pubState.msg_.current.resize(nTotalMotors);
     pubState.msg_.updated.resize(nTotalMotors);
-
+    std::cout << "nTotalMotors" << nTotalMotors << std::endl;
     int _cnt=0;
     for(int i=0;i<4;i++)
         for(int j=0;j<nDXLCount[i];j++)
@@ -32,15 +32,13 @@ RTROSSubscriber::RTROSSubscriber(ros::NodeHandle &nh)
     pthread_attr_setschedpolicy(&taskSub, SCHED_FIFO);
     param2.sched_priority = 1;
     pthread_attr_setschedparam(&taskSub, &param2);
-
- //   subSetter.initialize(3,nh,"rt_dynamixel/joint_set");
+ //subSetter.initialize(3,nh,"rt_dynamixel/joint_set");
      subSetter = nh.subscribe("rt_dynamixel/joint_set",3,&RTROSSubscriber::JointCallback, this);
 }
 
 void RTROSSubscriber::JointCallback(const rt_dynamixel_msgs::JointSetConstPtr msg)
 {
      recMsg = msg;
-     std::cout << "joint" << recMsg << std::endl;
 }
 
 RTROSMotorSettingService::RTROSMotorSettingService(ros::NodeHandle &nh)
@@ -52,7 +50,7 @@ RTROSMotorSettingService::RTROSMotorSettingService(ros::NodeHandle &nh)
 bool RTROSMotorSettingService::modeSwitch(rt_dynamixel_msgs::ModeSettingRequest &req,
                 rt_dynamixel_msgs::ModeSettingResponse &res)
 {
-
+    std::cout << "Request mode " << req.mode << std::endl;
     res.result = -1;
     switch (req.mode)
     {
@@ -93,7 +91,6 @@ bool RTROSMotorSettingService::modeSwitch(rt_dynamixel_msgs::ModeSettingRequest 
         break;
     }
 
-
     return true;
 }
 
@@ -101,6 +98,7 @@ bool RTROSMotorSettingService::modeSwitch(rt_dynamixel_msgs::ModeSettingRequest 
 bool RTROSMotorSettingService::motorSet(rt_dynamixel_msgs::MotorSettingRequest &req,
                 rt_dynamixel_msgs::MotorSettingResponse &res)
 {
+
     for(int i=0; i<4; i++)
     {
         dxlDevice[i].bControlLoopEnable = false;
@@ -117,10 +115,9 @@ bool RTROSMotorSettingService::motorSet(rt_dynamixel_msgs::MotorSettingRequest &
 
     pthread_attr_init(&motorSet);
     pthread_attr_setschedpolicy(&motorSet, SCHED_FIFO);
-    param3.sched_priority = 0;
+    param3.sched_priority =
     pthread_attr_setschedparam(&motorSet, &param3);
-
-    pthread_create(&MotorSetTask, &motorSet, &motor_set_proc, 0);
+    pthread_create(&MotorSetTask, &motorSet, &motor_set_proc, this);
     motorResponse.result = -1;
 
     motorRequest = req;
@@ -135,13 +132,6 @@ bool RTROSMotorSettingService::motorSet(rt_dynamixel_msgs::MotorSettingRequest &
     }
     return true;
 }
-
-//////////////////////////////////////////////////////
-/// \brief publisher_proc
-/// \param arg
-///
-///
-///
 
 void* publisher_proc(void *arg)
 {
@@ -187,8 +177,6 @@ void* publisher_proc(void *arg)
     }
 }
 
-
-
 void* subscribe_proc(void *arg)
 {
     RTROSSubscriber* rtsub = (RTROSSubscriber*)arg;
@@ -200,7 +188,7 @@ void* subscribe_proc(void *arg)
     {
         dynamixel_packet::wait_period(&info2); //wait for next cycle
         rt_dynamixel_msgs::JointSetConstPtr rcvMsg = rtsub->recMsg;
-        std::cout << "jointtask" << rcvMsg << std::endl;
+   //     std::cout << "jointtask" << rcvMsg << std::endl;
         if(rcvMsg) // if message recieved ( if not rcvMsg == NULL )
         {
             // Data set

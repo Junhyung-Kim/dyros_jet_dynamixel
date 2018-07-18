@@ -38,7 +38,7 @@ void* motor_set_proc(void *arg);
 
 class RTROSPublisher
 {
-    pthread_t TaskObject;
+    pthread_t TaskPublish;
     pthread_attr_t taskPub;
     struct sched_param param1;
 public:
@@ -46,15 +46,15 @@ public:
 
     RTROSPublisher(ros::NodeHandle &nh);
     virtual ~RTROSPublisher()
-    {        pthread_detach(TaskObject);    }
+    {        pthread_detach(TaskPublish);    }
     void start()
-    {        pthread_create(&TaskObject, &taskPub, &publisher_proc, 0);    }
+    {        pthread_create(&TaskPublish, &taskPub, &publisher_proc, this);    }
 
 };
 
 class RTROSSubscriber
 {
-    pthread_t Subscriber;
+    pthread_t TaskSubscriber;
     pthread_attr_t taskSub;
     struct sched_param param2;
 
@@ -66,10 +66,10 @@ public:
     rt_dynamixel_msgs::JointSetConstPtr recMsg;
     RTROSSubscriber(ros::NodeHandle &nh);
     virtual ~RTROSSubscriber()
-    {        pthread_detach(Subscriber);    }
+    {        pthread_detach(TaskSubscriber);    }
 
     void start()
-    {        pthread_create(&Subscriber, &taskSub, &subscribe_proc, 0);    }
+    {        pthread_create(&TaskSubscriber, &taskSub, &subscribe_proc, this);    }
 
 };
 
@@ -93,8 +93,6 @@ public:
     RTROSMotorSettingService(ros::NodeHandle &nh);
     virtual ~RTROSMotorSettingService()
     {           }
-
-
 
 };
 

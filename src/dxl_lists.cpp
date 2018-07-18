@@ -24,49 +24,54 @@ dxl_pro_data dxlLists[4][10] = {
 dxl_pro_data dxlLists[4][10] = {
     {
         // Index: 0: 1-Right Upper body
-          {1, H54},
-          {3, H54},
-         // {5, H54},     // Warning
-    //      {7, H54},
-    //      {9, H54},
-    //      {11, H54},
-    //      {13, H54}
-     //   {11, H42},
-     //  {13, H42},
+         {1, H54},
+         {3, H54},
+         {5, H54},     // Warning
+         {7, H54},
+         {9, H54},
+         {11, H42},
+         {13, H42},
         //{31, H42}
     },    {
         // Index: 1: 2-Left Upper body
-    //    {2, H54},
-    //    {4, H54},
-    //    {6, H54},
-    //    {8, H54},
-    //    {10, H54},
-    //    {12, H42},
-    //    {14, H42},
+        {2, H54},
+        {4, H54},
+        {6, H54},
+        {8, H54},
+        {10, H54},
+        {12, H42},
+        {14, H42},
         //{32, H42}
     },    {
         // Index: 2: 3-Right Lower body
+   //    {1, H54},
+  //      {3, H54},
+  //      {5, H54},     // Warning
+  //       {7, H54},
+  //      {9, H54},
+  //    {11, H42},
+  //    {13, H42},
 
-     //   {15, H54},    // Fatal
-    //    {17, H54},    // Fatal
-    //    {19, H54},    // Warning
-    //    {21, H54},    // Warning
-    //    {23, H54},
-    //   {25, H54},
-    //    {27, H54},
+        {15, H54},    // Fatal
+        {17, H54},    // Fatal
+        {19, H54},    // Warning
+        {21, H54},    // Warning
+        {23, H54},
+        {25, H54},
+        {27, H54},
+
 
     },    {
-        // Index: 3: 4-Left Lower body
-
-   //     {16, H54},
-   //     {18, H54},
-   //     {20, H54},
-   //     {22, H54},
-   //     {24, H54},
-   //     {26, H54},
+   // Index: 3: 4-Left Lower body
+        {16, H54},
+        {18, H54},
+        {20, H54},
+        {22, H54},
+        {24, H54},
+        {26, H54},
         //{29, H42},
         //{30, H42},
-   //     {28, H54},
+        {28, H54},
 
     }
 };   // Max 4channels, 10 motors
@@ -78,43 +83,53 @@ dxl_gains dxlGains[4][10] =
         // Index: 0
         {1, 15,-1,-1},
         {3, 15,-1,-1},
-      //  {5, 15,-1,-1},
-     //   {7, 15,-1,-1},
-    //    {9, 15,-1,-1},
-   //     {11, 15,-1,-1},
-   //     {13, 15,-1,-1},
+        {5, 15,-1,-1},
+        {7, 15,-1,-1},
+        {9, 15,-1,-1},
+        {11, 15,-1,-1},
+        {13, 15,-1,-1},
         //{31, 15,-1,-1}
     },    {
         // Index: 1
-   //     {2, 15, -1, -1},
-   //     {4, 15,-1,-1},
-   //     {6, 15,-1,-1},
-   //     {8, 15,-1,-1},
-   //     {10, 15,-1,-1},
-   //     {12, 15,-1,-1},
-   //    {14, 15,-1,-1},
+        {2, 15, -1, -1},
+        {4, 15,-1,-1},
+        {6, 15,-1,-1},
+        {8, 15,-1,-1},
+        {10, 15,-1,-1},
+        {12, 15,-1,-1},
+        {14, 15,-1,-1},
         //{32, 15,-1,-1}
     },    {
+
+
+   //      {1, 15,-1,-1},
+   //      {3, 15,-1,-1},
+   //     {5, 15,-1,-1},
+   //     {7, 15,-1,-1},
+   //      {9, 15,-1,-1},
+   //       {11, 15,-1,-1},
+   //       {13, 15,-1,-1},
+
         // Index: 2
-   //     {15, 96,500,0},
-   //     {17, 96,500,0},
-   //     {19, 96,500,0},
-   //     {21, 96,500,0},
-   //     {23, 96,500,0},
-   //     {25, 96,500,0},
-   //     {27, 96,500,0}
+        {15, 96,500,0},
+        {17, 96,500,0},
+        {19, 96,500,0},
+        {21, 96,500,0},
+        {23, 96,500,0},
+        {25, 96,500,0},
+        {27, 96,500,0}
     },    {
         // Index: 3
-   //       {16, 96,500,0},
-   //     {18, 96,500,0},
-   //     {20, 96,500,0},
-   //     {22, 96,500,0},
-   //     {24, 96,500,0},
-   //     {26, 96,500,0},
-   //     {28, 15,-1,-1},
+        {16, 96,500,0},
+        {18, 96,500,0},
+        {20, 96,500,0},
+        {22, 96,500,0},
+        {24, 96,500,0},
+        {26, 96,500,0},
+        {28, 15,-1,-1},
         //{29, 96,500,10},
         //{30, 96,500,10}
-    }
+  }
 };
 
 int nTotalMotors;
@@ -173,10 +188,10 @@ bool dxl_initailize()
        error = dxlDevice[i].Connect();
        if(error == false)
        {
-        //    ROS_ERROR("Error on openning serial device: rtser%d",i);
+           ROS_ERROR("Error on openning serial device: ttyCTI%d",i);
            return false;
         }
-        dxlDevice[i].dxl_control();
+        dxlDevice[i].startThread();
     }
     return true;
 }
@@ -209,7 +224,7 @@ void motion_init_proc(bool *isDone)
   bool isUpdateComplete[4] = {false, };
   int error;
   int nRecv[4] = {0, };
-  struct timespec tim, tim1, tim2;
+  struct timespec tim, tim1, tim2; //5E6 = 5MS
   tim.tv_sec = 0;
   tim.tv_nsec = 5000000;
   tim1.tv_sec = 0;
@@ -220,8 +235,8 @@ void motion_init_proc(bool *isDone)
   for(int c=0; c<2; c++) //2
   {
     for(int i=0; i<4; i++) //4
-    { std::cout << dxlDevice[i].ComPort << std::endl;
-      dxlDevice[i].setReturnDelayTime(40);
+    {
+      dxlDevice[i].setReturnDelayTime(30);
       nanosleep(&tim,NULL);
       dxlDevice[i].setAllAcceleration(0);
       nanosleep(&tim,NULL);
@@ -237,7 +252,6 @@ void motion_init_proc(bool *isDone)
           if(dxlGains[i][j].position_p_gain  < 0) continue;
           if(dxlGains[i][j].velocity_i_gain  < 0) continue;
           if(dxlGains[i][j].velocity_p_gain  < 0) continue;
-
           dxlDevice[i].setPositionGain(j,dxlGains[i][j].position_p_gain,&err);
           nanosleep(&tim,NULL);
 
@@ -246,29 +260,26 @@ void motion_init_proc(bool *isDone)
         }
         else
         {
-        //              ROS_ERROR("No match between Devices ID and Gain datas");
+          ROS_ERROR("No match between Devices ID and Gain datas");
         }
 
       }
     }
   }
-  for(int i=0;i<1;i++) //4
+  for(int i=0;i<4;i++) //4
       {
-          dxlDevice[i].setStatusReturn();
-     //     ROS_INFO("chennal... %d",i);
+         // dxlDevice[i].setStatusReturn();
+          ROS_INFO("chennal... %d",i);
           for(int c=0; c<10;c++)
           {
-               error = dxlDevice[i].getAllStatus();
-           //    dxlDevice[i].setStatusReturn();
-              std::cout << "errss" << error << std::endl;
-              nanosleep(&tim2,NULL);
+              nRecv[i] = dxlDevice[i].getAllStatus();
               if(nRecv[i] == dxlDevice[i].getMotorNum())
               {
                   isUpdateComplete[i] = true;
               }
               else
               {
-        //          ROS_INFO("ID: %d Motor seems to be dead?",dxlDevice[i][nRecv[i]].id);
+              // ROS_INFO("ID: %d Motor seems to be dead?",dxlDevice[i][nRecv[i]].id);
               }
                nanosleep(&tim1,NULL);
           }
@@ -292,35 +303,47 @@ void motion_init_proc(bool *isDone)
           }
 
       *isDone = true;
-
 }
 
 void motor_test()
 {
-  std::cout << "ASdfas" <<std::endl;
   uint8_t err;
   double pdRadians[10] = {0,0,0,0,0,0,0,0,0,0};
   double goal_pdRadians[10] = {0, };
   double goal_pos, init_pos;
-/*  dxlDevice[0].setAllTorque(0);
-  for (int i=0; i<dxlDevice[0].getMotorNum(); i++)
+  dxlDevice[2].setAllTorque(0);
+/*  dxlDevice[2].setStatusReturn();
+
+
+  for(int j=0;j<dxlDevice[2].getMotorNum(); j++)
   {
-    pdRadians[i] = dxlDevice[0][i].aim_radian;
-  }
+        dxlDevice[2][j].aim_radian = dxlDevice[2][j].position_rad();
+ }W
 */
+  for(int j=0;j<dxlDevice[2].getMotorNum(); j++)
+  {
+        pdRadians[j] = dxlDevice[2][j].aim_radian;
+  }
+/*  for (int i=0; i<dxlDevice[2].getMotorNum(); i++)
+  {
+    pdRadians[i] = dxlDevice[2][i].aim_radian;
+  }*/
+
   for(double i = 0; i<400 ; i++)
   {
     for(int j=0; j<10; j++)
     {
-      goal_pdRadians[j] = pdRadians[j] + i/480;
+      goal_pdRadians[j] = pdRadians[j] + i/1200;
     }
+ //   dxlDevice[2].getAllStatus();
 
-   // dxlDevice[0].setEachRadian(goal_pdRadians);
+    dxlDevice[2].setEachRadian(goal_pdRadians);
 
-    std::cout << "motorPresentpos" << goal_pdRadians[2] << std::endl;
-
-    usleep(5000);
+    std::cout << "motorPresentpostt" << goal_pdRadians[0] << std::endl;
+    //std::cout << "motorrealtpos" << dxlDevice[2][0].position_rad() << std::endl;
+    usleep(10500);
   }
+  dxlDevice[2].setAllTorque(0);
 
 }
 
