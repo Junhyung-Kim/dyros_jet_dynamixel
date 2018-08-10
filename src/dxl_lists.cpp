@@ -26,40 +26,31 @@ dxl_pro_data dxlLists[4][10] = {
         // Index: 0: 1-Right Upper body
          {1, H54},
          {3, H54},
-         {5, H54},     // Warning
          {7, H54},
-         {9, H54},
          {11, H42},
          {13, H42},
-        //{31, H42}
+         {9, H54},
+ //    {5, H54}, // Warning
+
     },    {
         // Index: 1: 2-Left Upper body
         {2, H54},
         {4, H54},
         {6, H54},
-        {8, H54},
         {10, H54},
         {12, H42},
         {14, H42},
-        //{32, H42}
+        {8, H54},
+
     },    {
         // Index: 2: 3-Right Lower body
-   //    {1, H54},
-  //      {3, H54},
-  //      {5, H54},     // Warning
-  //       {7, H54},
-  //      {9, H54},
-  //    {11, H42},
-  //    {13, H42},
-
-        {15, H54},    // Fatal
-        {17, H54},    // Fatal
+         {15, H54},    // Fatal
+         {17, H54},    // Fatal
         {19, H54},    // Warning
         {21, H54},    // Warning
         {23, H54},
         {25, H54},
-        {27, H54},
-
+        {27, H54}
 
     },    {
    // Index: 3: 4-Left Lower body
@@ -69,9 +60,7 @@ dxl_pro_data dxlLists[4][10] = {
         {22, H54},
         {24, H54},
         {26, H54},
-        //{29, H42},
-        //{30, H42},
-        {28, H54},
+        {28, H54}
 
     }
 };   // Max 4channels, 10 motors
@@ -83,52 +72,42 @@ dxl_gains dxlGains[4][10] =
         // Index: 0
         {1, 15,-1,-1},
         {3, 15,-1,-1},
-        {5, 15,-1,-1},
         {7, 15,-1,-1},
-        {9, 15,-1,-1},
         {11, 15,-1,-1},
         {13, 15,-1,-1},
-        //{31, 15,-1,-1}
+        {9, 15,-1,-1},
+//   {5, 15,-1,-1},
+
+
+       //{31, 15,-1,-1}
     },    {
         // Index: 1
         {2, 15, -1, -1},
         {4, 15,-1,-1},
         {6, 15,-1,-1},
-        {8, 15,-1,-1},
         {10, 15,-1,-1},
         {12, 15,-1,-1},
         {14, 15,-1,-1},
+        {8, 15,-1,-1},
         //{32, 15,-1,-1}
     },    {
-
-
-   //      {1, 15,-1,-1},
-   //      {3, 15,-1,-1},
-   //     {5, 15,-1,-1},
-   //     {7, 15,-1,-1},
-   //      {9, 15,-1,-1},
-   //       {11, 15,-1,-1},
-   //       {13, 15,-1,-1},
-
-        // Index: 2
-        {15, 96,500,0},
-        {17, 96,500,0},
-        {19, 96,500,0},
-        {21, 96,500,0},
-        {23, 96,500,0},
-        {25, 96,500,0},
-        {27, 96,500,0}
+        {15,32,500,0},
+        {17,32,500,0},
+        {19, 32,500,0},
+        {21, 32,500,0},
+        {23, 32,500,0},
+        {25, 32,500,0},
+        {27, 32,500,0},
     },    {
+
         // Index: 3
-        {16, 96,500,0},
-        {18, 96,500,0},
-        {20, 96,500,0},
-        {22, 96,500,0},
-        {24, 96,500,0},
-        {26, 96,500,0},
-        {28, 15,-1,-1},
-        //{29, 96,500,10},
-        //{30, 96,500,10}
+        {16, 32,500,0},
+        {18, 32,500,0},
+        {20, 32,500,0},
+        {22, 32,500,0},
+        {24, 32,500,0},
+        {26, 32,500,0},
+        {28, 32,500,0},
   }
 };
 
@@ -236,7 +215,7 @@ void motion_init_proc(bool *isDone)
   {
     for(int i=0; i<4; i++) //4
     {
-      dxlDevice[i].setReturnDelayTime(30);
+      dxlDevice[i].setReturnDelayTime(0);
       nanosleep(&tim,NULL);
       dxlDevice[i].setAllAcceleration(0);
       nanosleep(&tim,NULL);
@@ -252,6 +231,7 @@ void motion_init_proc(bool *isDone)
           if(dxlGains[i][j].position_p_gain  < 0) continue;
           if(dxlGains[i][j].velocity_i_gain  < 0) continue;
           if(dxlGains[i][j].velocity_p_gain  < 0) continue;
+          std::cout << "positionGain" <<std::endl;
           dxlDevice[i].setPositionGain(j,dxlGains[i][j].position_p_gain,&err);
           nanosleep(&tim,NULL);
 
@@ -268,7 +248,7 @@ void motion_init_proc(bool *isDone)
   }
   for(int i=0;i<4;i++) //4
       {
-         // dxlDevice[i].setStatusReturn();
+          dxlDevice[i].setStatusReturn();
           ROS_INFO("chennal... %d",i);
           for(int c=0; c<10;c++)
           {
@@ -279,7 +259,7 @@ void motion_init_proc(bool *isDone)
               }
               else
               {
-              // ROS_INFO("ID: %d Motor seems to be dead?",dxlDevice[i][nRecv[i]].id);
+                ROS_INFO("ID: %d Motor seems to be dead?",dxlDevice[i][nRecv[i]].id);
               }
                nanosleep(&tim1,NULL);
           }
@@ -299,51 +279,6 @@ void motion_init_proc(bool *isDone)
           for(int j=0;j<dxlDevice[i].getMotorNum(); j++)
           {
                 dxlDevice[i][j].aim_radian = dxlDevice[i][j].position_rad();
-         //     std::cout << "i " << i << "j " << j << "dxlDevice" << dxlDevice[i][j].position_rad() << std::endl;
           }
-
       *isDone = true;
 }
-
-void motor_test()
-{
-  uint8_t err;
-  double pdRadians[10] = {0,0,0,0,0,0,0,0,0,0};
-  double goal_pdRadians[10] = {0, };
-  double goal_pos, init_pos;
-  dxlDevice[2].setAllTorque(0);
-/*  dxlDevice[2].setStatusReturn();
-
-
-  for(int j=0;j<dxlDevice[2].getMotorNum(); j++)
-  {
-        dxlDevice[2][j].aim_radian = dxlDevice[2][j].position_rad();
- }W
-*/
-  for(int j=0;j<dxlDevice[2].getMotorNum(); j++)
-  {
-        pdRadians[j] = dxlDevice[2][j].aim_radian;
-  }
-/*  for (int i=0; i<dxlDevice[2].getMotorNum(); i++)
-  {
-    pdRadians[i] = dxlDevice[2][i].aim_radian;
-  }*/
-
-  for(double i = 0; i<400 ; i++)
-  {
-    for(int j=0; j<10; j++)
-    {
-      goal_pdRadians[j] = pdRadians[j] + i/1200;
-    }
- //   dxlDevice[2].getAllStatus();
-
-    dxlDevice[2].setEachRadian(goal_pdRadians);
-
-    std::cout << "motorPresentpostt" << goal_pdRadians[0] << std::endl;
-    //std::cout << "motorrealtpos" << dxlDevice[2][0].position_rad() << std::endl;
-    usleep(10500);
-  }
-  dxlDevice[2].setAllTorque(0);
-
-}
-

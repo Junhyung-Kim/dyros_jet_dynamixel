@@ -19,9 +19,7 @@ int main(int argc, char **argv)
 
   if(dxl_initailize() == false) return -1;
 
- // if(dynamixel_motor_init() == false) return -1;
-
- // motor_test();
+  if(dynamixel_motor_init() == false) return -1;
 
   RTROSPublisher rtRosPublisher(nh);
   RTROSSubscriber rtRosSubscriber(nh);
@@ -29,12 +27,12 @@ int main(int argc, char **argv)
 
   rtRosPublisher.start();
   rtRosSubscriber.start();
-/*
+
   for(int i=0; i<4; i++)
   {
      dxlDevice[i].bControlLoopEnable = true;
   }
-*/
+
   ros::spin();
 
   return 0;

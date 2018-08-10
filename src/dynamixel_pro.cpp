@@ -68,7 +68,7 @@
     struct itimerspec itval;
 
     /* Create the timer */
-    fd = timerfd_create(CLOCK_MONOTONIC, 0);
+    fd = timerfd_create(CLOCK_REALTIME, 0);
     info->wakeups_missed = 0;
     info->timer_fd = fd;
     if (fd == -1)
@@ -83,8 +83,8 @@
     itval.it_value.tv_nsec = ns;
     ret = timerfd_settime(fd, 0, &itval, NULL);
     return ret;
-  }
 
+  }
   void dynamixel_packet::wait_period(struct periodic_info *info)
   {
     unsigned long long missed;
@@ -92,7 +92,7 @@
 
     /* Wait for the next timer event. If we have missed any the
        number is written to "missed" */
-    ret = read (info->timer_fd, &missed, sizeof (missed));
+   ret = read (info->timer_fd, &missed, sizeof (missed));
     if (ret == -1)
     {
       perror ("read timer");
@@ -101,8 +101,8 @@
 
     /* "missed" should always be >= 1, but just to be sure, check it is not 0 anyway */
    // std::cout << "wakeups_missed" << info->wakeups_missed << std::endl;
-    if (missed > 0)
-      info->wakeups_missed += (missed - 1);
+   // if (missed > 0)
+   //   info->wakeups_missed += (missed - 1);
   }
 
   bool DynamixelPro::checkControlLoopEnabled(const char *szSetName)
@@ -153,13 +153,15 @@
               _pbParams[_nParam++] = DXL_HIBYTE(DXL_HIWORD(nH42Position));
           }
           groupposwrite.addParam(vMotorData[i].id, _pbParams);
+          _nParam=0;
       }
       groupposwrite.txPacket();
       groupposwrite.clearParam();
   }
 
   int DynamixelPro::getAllStatus()
-  {   GroupSyncRead groupstatread(ComPort,packetHandler,pres_pos,size_12);
+  {
+    GroupSyncRead groupstatread(ComPort,packetHandler,pres_pos,size_12);
       int error;
       int nReceived = 0;
       for (int i = 0; i < nMotorNum; i++)
@@ -168,27 +170,46 @@
       }
       error = groupstatread.txRxPacket();
       mutex_acquire();
+
+      if (error == 0)
+      {
+      //  std::cout << "update" << std::endl;
       for (int i = 0; i< nMotorNum ;i++)
       {
-         uint8_t error1[1];
-
-         groupstatread.getError(vMotorData[i].id, error1);
-         vMotorData[i].updated = error1[0];
-         if(vMotorData[i].updated == 0)
-         {
-           vMotorData[i].position = groupstatread.getData(vMotorData[i].id,pres_pos,size_4);
-
-           vMotorData[i].velocity = groupstatread.getData(vMotorData[i].id,pres_pos+4,size_4);
-
-           vMotorData[i].current = groupstatread.getData(vMotorData[i].id,pres_pos+4+4+2,size_2);
-
-           nReceived++;
-         }
-         else
-         {
-       //   std::cout << "[WARN] Failed to receieve the response. (ID: " << (int)vMotorData[i].id << ")" << std::endl;
-         }
+        uint8_t error1[1];
+        vMotorData[i].position = groupstatread.getData(vMotorData[i].id,pres_pos,size_4);
+        vMotorData[i].velocity = groupstatread.getData(vMotorData[i].id,pres_pos+4,size_4);
+        vMotorData[i].current = groupstatread.getData(vMotorData[i].id,pres_pos+4+4+2,size_2);
+        vMotorData[i].updated =groupstatread.getError(vMotorData[i].id, error1);
+        nReceived++;
+    //    std::cout << "vMotorData" << (int)vMotorData[i].position << std::endl;
       }
+      }
+      else
+      {
+        for (int i=0; i<nMotorNum; i++)
+        {
+          uint8_t error1[1];
+          bool get_error;
+          get_error = groupstatread.getError(vMotorData[i].id, error1);
+          vMotorData[i].updated = get_error;
+   //       std::cout << "update" << (int)vMotorData[i].updated << std::endl;
+
+          if(vMotorData[i].updated != 0)
+          {
+           //  std::cout << "[WARN] Failed to receieve the response. (ID: " << (int)vMotorData[i].id << ")" << std::endl;
+          }
+          else
+          {
+            vMotorData[i].position = groupstatread.getData(vMotorData[i].id,pres_pos,size_4);
+            vMotorData[i].velocity = groupstatread.getData(vMotorData[i].id,pres_pos+4,size_4);
+            vMotorData[i].current = groupstatread.getData(vMotorData[i].id,pres_pos+4+4+2,size_2);
+
+            nReceived++;
+          }
+        }
+      }
+    //  std::cout << "nRe" << nReceived << std::endl;
       mutex_release();
       return nReceived;
   }
@@ -270,7 +291,7 @@
     unsigned int _nParam = 0;
     uint8_t _pbParams[1];
 
-      if(checkControlLoopEnabled("Acceleration"))  { return; }
+      if(checkControlLoopEnabled("torque"))  { return; }
       for (int i = 0; i<2; i++)
       {   _nParam = 0;
           // Set Goal Acc
@@ -292,7 +313,8 @@
       pos_gain = nPositionPGain;
       if(checkControlLoopEnabled("position gain"))  { return 1; }
       posGain=packetHandler->write2ByteTxRx(ComPort, vMotorData[index].id, posgain_address, pos_gain, error);
-     std::cout << "id " << index << " dd " << (int)vMotorData[index].id<< std::endl;
+
+      //  std::cout << "id " << index << " dd " << (int)vMotorData[index].id<< std::endl;
       return posGain;
   }
 
@@ -302,8 +324,8 @@
       uint16_t velo_pgain, velo_igain;
       velo_pgain = nVelocityPGain;
       velo_igain = nVelocityIGain;
-      uint32_t vel_gain = ((uint32_t)velo_igain << 16)| velo_pgain;
-      std::cout << "Setvel" << std::endl;
+      uint32_t vel_gain = ((uint32_t)velo_pgain << 16)| velo_igain;
+     // std::cout << "Setvel" << std::endl;
       if(checkControlLoopEnabled("get velocity gain"))  { return 1; }
       velGain = packetHandler->write4ByteTxRx(ComPort, vMotorData[index].id, velgain_address, vel_gain, error);
       return velGain;
@@ -366,36 +388,38 @@
       int i, motorNum =  pDynamixelObj->getMotorNum();
       double pdRadians[10] = {0, };
       struct periodic_info info3;
-  //    std::cout << "motorNum" << motorNum << std::endl;
-      dynamixel_packet::make_periodic(50000, &info3);
+      dynamixel_packet::make_periodic(5000, &info3);
+
+      int a = get_real_time();
+    //  std::cout << "wait" << a << std::endl;
+
         while(1)
         {
           if(pDynamixelObj->bControlLoopEnable)
           { int a = get_real_time();
-          //  std::cout << "wait" << a << std::endl;
+          //  std::cout << "wait" << (int)a << std::endl;
+           // std::cout << "motornum" << motorNum << std::endl;
             dynamixel_packet::wait_period(&info3);
-            a = get_real_time();
-       //     std::cout << "Wait Finisti" << a << std::endl;
             pDynamixelObj->bControlLoopProcessing = true;
             pDynamixelObj->LoopStartTime = get_real_time();
             pDynamixelObj->LoopTimeoutTime = pDynamixelObj->LoopStartTime + 4.7; //4.7ms
-          }
-
          if(pDynamixelObj->bControlWriteEnable)
           {
+           //std::cout << "pdRadians_prev" << pdRadians[0] << std::endl;
+
               pDynamixelObj->mutex_acquire();
               for(i=0;i<motorNum;i++)
-              { // std::cout <<"dsafsdfa" << std::endl;
-                 pdRadians[i] = (*pDynamixelObj).vMotorData[i].aim_radian;
-                 std::cout <<"dsafsdfa    "<< i << "  " << pdRadians[i]<< std::endl;
-
+              {
+                pdRadians[i] = (*pDynamixelObj).vMotorData[i].aim_radian;
               }
+            //  std::cout << "motornum" << motorNum <<" pdRadians" << pdRadians[1] << std::endl;
               pDynamixelObj->mutex_release();
               pDynamixelObj->setEachRadian(pdRadians);
-        //  std::cout << " ssssss" << std::endl;
           }
-          pDynamixelObj->getAllStatus();
-          pDynamixelObj->bControlLoopProcessing = false;
-        }
-  }
+           pDynamixelObj->getAllStatus();
+           pDynamixelObj->bControlLoopProcessing = false;
+         }
+    }
+}
+
 

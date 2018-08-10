@@ -1,4 +1,4 @@
-      #include "rt_ros_service.h"
+       #include "rt_ros_service.h"
     #include <iostream>
 
 //RTIME control_period = 25e5;
@@ -9,7 +9,7 @@ RTROSPublisher::RTROSPublisher(ros::NodeHandle &nh)
 
     pthread_attr_init(&taskPub);
     pthread_attr_setschedpolicy(&taskPub, SCHED_FIFO);
-    param1.sched_priority = 2;
+    param1.sched_priority = 10;
     pthread_attr_setschedparam(&taskPub, &param1);
 
     pubState.msg_.id.resize(nTotalMotors);
@@ -30,7 +30,7 @@ RTROSSubscriber::RTROSSubscriber(ros::NodeHandle &nh)
 {
     pthread_attr_init(&taskSub);
     pthread_attr_setschedpolicy(&taskSub, SCHED_FIFO);
-    param2.sched_priority = 1;
+    param2.sched_priority = 9;
     pthread_attr_setschedparam(&taskSub, &param2);
  //subSetter.initialize(3,nh,"rt_dynamixel/joint_set");
      subSetter = nh.subscribe("rt_dynamixel/joint_set",3,&RTROSSubscriber::JointCallback, this);
@@ -43,20 +43,20 @@ void RTROSSubscriber::JointCallback(const rt_dynamixel_msgs::JointSetConstPtr ms
 
 RTROSMotorSettingService::RTROSMotorSettingService(ros::NodeHandle &nh)
 {
-    modeServer = nh.advertiseService("rt_dynamixel/mode",&RTROSMotorSettingService::modeSwitch,this);
-    motorServer = nh.advertiseService("rt_dynamixel/motor_set",&RTROSMotorSettingService::motorSet,this);
+    modeServer = nh.advertiseService("/rt_dynamixel/mode",&RTROSMotorSettingService::modeSwitch,this);
+    motorServer = nh.advertiseService("/rt_dynamixel/motor_set",&RTROSMotorSettingService::motorSet,this);
 }
 
 bool RTROSMotorSettingService::modeSwitch(rt_dynamixel_msgs::ModeSettingRequest &req,
                 rt_dynamixel_msgs::ModeSettingResponse &res)
 {
-    std::cout << "Request mode " << req.mode << std::endl;
-    res.result = -1;
+   res.result = -1;
     switch (req.mode)
     {
     case rt_dynamixel_msgs::ModeSettingRequest::CONTROL_RUN:
         for(int i=0;i<4;i++)
         {
+          std::cout << "when??" << std::endl;
             dxlDevice[i].bControlWriteEnable = true;
         }
         res.result =  rt_dynamixel_msgs::ModeSettingRequest::CONTROL_RUN;
@@ -98,6 +98,7 @@ bool RTROSMotorSettingService::modeSwitch(rt_dynamixel_msgs::ModeSettingRequest 
 bool RTROSMotorSettingService::motorSet(rt_dynamixel_msgs::MotorSettingRequest &req,
                 rt_dynamixel_msgs::MotorSettingResponse &res)
 {
+  std::cout << "Motorset" << std::endl;
 
     for(int i=0; i<4; i++)
     {
@@ -115,17 +116,18 @@ bool RTROSMotorSettingService::motorSet(rt_dynamixel_msgs::MotorSettingRequest &
 
     pthread_attr_init(&motorSet);
     pthread_attr_setschedpolicy(&motorSet, SCHED_FIFO);
-    param3.sched_priority =
+    param3.sched_priority = 7;
     pthread_attr_setschedparam(&motorSet, &param3);
-    pthread_create(&MotorSetTask, &motorSet, &motor_set_proc, this);
     motorResponse.result = -1;
 
     motorRequest = req;
+    pthread_create(&MotorSetTask, &motorSet, &motor_set_proc, this);
+    pthread_join(MotorSetTask,NULL);
     pthread_detach(MotorSetTask);
 
     res = motorResponse;
     //res.result = req.mode;
-
+ std::cout << "Motorsetend" << std::endl;
     for(int i=0; i<4; i++)
     {
         dxlDevice[i].bControlLoopEnable = true;
@@ -228,6 +230,8 @@ void* motor_set_proc(void *arg)
     case rt_dynamixel_msgs::MotorSettingRequest::SET_TORQUE_ENABLE:
         for (int i=0; i<4; i++)
         {
+          std::cout << "ssww" << pObj->motorRequest.value <<  std::endl;
+
             dxlDevice[i].setAllTorque(pObj->motorRequest.value);
             pObj->motorResponse.result = pObj->motorRequest.mode;
         }
@@ -236,6 +240,8 @@ void* motor_set_proc(void *arg)
     case rt_dynamixel_msgs::MotorSettingRequest::SET_GOAL_POSITION:
         if(check_vaild_dxl_from_id(pObj->motorRequest.id))
         {
+          std::cout << "Settargetrservice" << std::endl;
+
             channel = dxlID2Addr[pObj->motorRequest.id].channel;
             index = dxlID2Addr[pObj->motorRequest.id].index;
             dxlDevice[channel].setAimRadian(index,pObj->motorRequest.fvalue,&error);
@@ -246,6 +252,7 @@ void* motor_set_proc(void *arg)
     case rt_dynamixel_msgs::MotorSettingRequest::GET_HOMING_OFFSET:
         if(check_vaild_dxl_from_id(pObj->motorRequest.id))
         {
+          std::cout << "Sqs" << std::endl;
             channel = dxlID2Addr[pObj->motorRequest.id].channel;
             index = dxlID2Addr[pObj->motorRequest.id].index;
             dxlDevice[channel].getHomingOffset(index,pObj->motorRequest.value,&pObj->motorResponse.value,&error);
@@ -257,6 +264,8 @@ void* motor_set_proc(void *arg)
     case rt_dynamixel_msgs::MotorSettingRequest::SET_HOMING_OFFSET:
         if(check_vaild_dxl_from_id(pObj->motorRequest.id))
         {
+
+          std::cout << "Sqs111" << std::endl;
             channel = dxlID2Addr[pObj->motorRequest.id].channel;
             index = dxlID2Addr[pObj->motorRequest.id].index;
             pObj->motorResponse.result = pObj->motorRequest.mode;

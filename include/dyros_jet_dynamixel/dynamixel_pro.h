@@ -32,13 +32,13 @@ using namespace dynamixel;
 
 struct periodic_info
 {
-  /*
-  int sig;
+ /* int sig;
   sigset_t alarm_sig;
-  */
-
+  int wakeups_missed;
+*/
   int timer_fd;
   unsigned long long wakeups_missed;
+
 
 };
 
@@ -190,7 +190,7 @@ namespace DXL_PRO {
                         sprintf(mutexName,"dxl dat mtx %d", index);
                         pthread_mutex_init(&DataMutex, NULL);
                         pthread_attr_init(&taskObj);
-                        param4.sched_priority = 0 ;
+                        param4.sched_priority = 1 ;
                         pthread_attr_setschedparam(&taskObj, &param4);
                 }
 
