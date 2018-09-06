@@ -136,6 +136,7 @@
       uint8_t _pbParams[500];
       for (int i = 0; i<nMotorNum; i++)
       {
+          _nParam=0;
           if (vMotorData[i].type == H54)
           {
               int nH54Position = (int)(pdRadians[i] * RAD_TO_H54);
@@ -153,7 +154,6 @@
               _pbParams[_nParam++] = DXL_HIBYTE(DXL_HIWORD(nH42Position));
           }
           groupposwrite.addParam(vMotorData[i].id, _pbParams);
-          _nParam=0;
       }
       groupposwrite.txPacket();
       groupposwrite.clearParam();
@@ -168,49 +168,27 @@
       {
         groupstatread.addParam(vMotorData[i].id);
       }
-      error = groupstatread.txRxPacket();
+      error = groupstatread.txRxPacket(&nReceived);
+     //   error = groupstatread.txRxPacket();
       mutex_acquire();
-
-      if (error == 0)
-      {
-      //  std::cout << "update" << std::endl;
-      for (int i = 0; i< nMotorNum ;i++)
+      int k;
+      for (k=0; k<nReceived; k++)
       {
         uint8_t error1[1];
-        vMotorData[i].position = groupstatread.getData(vMotorData[i].id,pres_pos,size_4);
-        vMotorData[i].velocity = groupstatread.getData(vMotorData[i].id,pres_pos+4,size_4);
-        vMotorData[i].current = groupstatread.getData(vMotorData[i].id,pres_pos+4+4+2,size_2);
-        vMotorData[i].updated =groupstatread.getError(vMotorData[i].id, error1);
-        nReceived++;
-    //    std::cout << "vMotorData" << (int)vMotorData[i].position << std::endl;
+        bool get_error;
+
+        vMotorData[k].position = groupstatread.getData(vMotorData[k].id,pres_pos,size_4);
+        vMotorData[k].velocity = groupstatread.getData(vMotorData[k].id,pres_pos+4,size_4);
+        vMotorData[k].current = groupstatread.getData(vMotorData[k].id,pres_pos+4+4+2,size_2);
+        vMotorData[k].updated =groupstatread.getError(vMotorData[k].id, error1);
+        std::cout <<"Position" << vMotorData[k].position <<std::endl;
       }
-      }
-      else
+      for (; k<nMotorNum; k++)
       {
-        for (int i=0; i<nMotorNum; i++)
-        {
-          uint8_t error1[1];
-          bool get_error;
-          get_error = groupstatread.getError(vMotorData[i].id, error1);
-          vMotorData[i].updated = get_error;
-   //       std::cout << "update" << (int)vMotorData[i].updated << std::endl;
-
-          if(vMotorData[i].updated != 0)
-          {
-           //  std::cout << "[WARN] Failed to receieve the response. (ID: " << (int)vMotorData[i].id << ")" << std::endl;
-          }
-          else
-          {
-            vMotorData[i].position = groupstatread.getData(vMotorData[i].id,pres_pos,size_4);
-            vMotorData[i].velocity = groupstatread.getData(vMotorData[i].id,pres_pos+4,size_4);
-            vMotorData[i].current = groupstatread.getData(vMotorData[i].id,pres_pos+4+4+2,size_2);
-
-            nReceived++;
-          }
-        }
+           vMotorData[k].updated = dxl_pro_data::LOST;
       }
-    //  std::cout << "nRe" << nReceived << std::endl;
-      mutex_release();
+
+        mutex_release();
       return nReceived;
   }
 
@@ -403,6 +381,17 @@
             pDynamixelObj->bControlLoopProcessing = true;
             pDynamixelObj->LoopStartTime = get_real_time();
             pDynamixelObj->LoopTimeoutTime = pDynamixelObj->LoopStartTime + 4.7; //4.7ms
+//
+            if(motorNum == 7)
+            {
+              for(i=0;i<motorNum;i++)
+              {
+                pdRadians[i] = (*pDynamixelObj).vMotorData[i].aim_radian;
+               // std::cout << "pdRadians" << pdRadians[i] << std::endl;
+
+              }
+            }
+//
          if(pDynamixelObj->bControlWriteEnable)
           {
            //std::cout << "pdRadians_prev" << pdRadians[0] << std::endl;
@@ -411,10 +400,16 @@
               for(i=0;i<motorNum;i++)
               {
                 pdRadians[i] = (*pDynamixelObj).vMotorData[i].aim_radian;
+                if(motorNum == 4)
+                {
+                    pdRadians[i] = (*pDynamixelObj).vMotorData[i].aim_radian;
+                    std::cout << "pdRadians" << pdRadians[i] << std::endl;
+
+                }
               }
             //  std::cout << "motornum" << motorNum <<" pdRadians" << pdRadians[1] << std::endl;
               pDynamixelObj->mutex_release();
-              pDynamixelObj->setEachRadian(pdRadians);
+            //  pDynamixelObj->setEachRadian(pdRadians);
           }
            pDynamixelObj->getAllStatus();
            pDynamixelObj->bControlLoopProcessing = false;

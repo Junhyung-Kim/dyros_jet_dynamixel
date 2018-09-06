@@ -24,43 +24,49 @@ dxl_pro_data dxlLists[4][10] = {
 dxl_pro_data dxlLists[4][10] = {
     {
         // Index: 0: 1-Right Upper body
-         {1, H54},
-         {3, H54},
-         {7, H54},
-         {11, H42},
-         {13, H42},
-         {9, H54},
- //    {5, H54}, // Warning
+        {15, H54},
+          {3, H54},
+     //    {7, H54},
+    //      {11, H42},
+    //     {13, H42},
+  //  {5, H54}, // Warning
+   // {9, H54},
+
 
     },    {
         // Index: 1: 2-Left Upper body
-        {2, H54},
+  /*      {2, H54},
         {4, H54},
         {6, H54},
+
         {10, H54},
-        {12, H42},
-        {14, H42},
-        {8, H54},
+    //    {12, H42},
+   //     {14, H42},
+
+  //    {8, H54},*/
 
     },    {
         // Index: 2: 3-Right Lower body
-         {15, H54},    // Fatal
+    /*     {15, H54},    // Fatal
          {17, H54},    // Fatal
         {19, H54},    // Warning
         {21, H54},    // Warning
         {23, H54},
         {25, H54},
-        {27, H54}
+        {27, H54}*/
 
     },    {
    // Index: 3: 4-Left Lower body
-        {16, H54},
+     /*   {16, H54},
         {18, H54},
         {20, H54},
         {22, H54},
         {24, H54},
-        {26, H54},
-        {28, H54}
+
+     //   {26, H54},
+       {28, H54},*/
+
+
 
     }
 };   // Max 4channels, 10 motors
@@ -70,50 +76,55 @@ dxl_gains dxlGains[4][10] =
 {
     {
         // Index: 0
-        {1, 15,-1,-1},
+
+        {15, 15,-1,-1},
         {3, 15,-1,-1},
-        {7, 15,-1,-1},
-        {11, 15,-1,-1},
-        {13, 15,-1,-1},
-        {9, 15,-1,-1},
-//   {5, 15,-1,-1},
+   //    {7, 15,-1,-1},
+    //   {11, 15,-1,-1},
+   //     {13, 15,-1,-1},
+  //  {5, 15,-1,-1},
+ //  {9, 15,-1,-1},
+
 
 
        //{31, 15,-1,-1}
     },    {
         // Index: 1
-        {2, 15, -1, -1},
+ /*       {2, 15, -1, -1},
         {4, 15,-1,-1},
         {6, 15,-1,-1},
+
         {10, 15,-1,-1},
-        {12, 15,-1,-1},
-        {14, 15,-1,-1},
-        {8, 15,-1,-1},
-        //{32, 15,-1,-1}
+    //    {12, 15,-1,-1},
+      //  {14, 15,-1,-1},
+
+ //   {8, 15,-1,-1},
+        //{32, 15,-1,-1}*/
     },    {
-        {15,32,500,0},
+  /*      {15,32,500,0},
         {17,32,500,0},
         {19, 32,500,0},
         {21, 32,500,0},
         {23, 32,500,0},
         {25, 32,500,0},
-        {27, 32,500,0},
+        {27, 32,500,0},*/
     },    {
 
         // Index: 3
-        {16, 32,500,0},
+   /*    {16, 32,500,0},
         {18, 32,500,0},
         {20, 32,500,0},
         {22, 32,500,0},
-        {24, 32,500,0},
-        {26, 32,500,0},
-        {28, 32,500,0},
+    {24, 32,500,0},
+  // {26, 32,500,0},
+        {28, 32,500,0},*/
+
   }
 };
 
 int nTotalMotors;
 int nDXLCount[4] = {0, };
-dxl_inverse dxlID2Addr[60] = { 0, };
+dxl_inverse dxlID2Addr[60] = {0, };
 DynamixelPro dxlDevice[4] = {0, 1, 2, 3};
 
 void make_dxl_count()
@@ -170,7 +181,7 @@ bool dxl_initailize()
            ROS_ERROR("Error on openning serial device: ttyCTI%d",i);
            return false;
         }
-        dxlDevice[i].startThread();
+    //    dxlDevice[i].startThread();
     }
     return true;
 }
@@ -231,8 +242,7 @@ void motion_init_proc(bool *isDone)
           if(dxlGains[i][j].position_p_gain  < 0) continue;
           if(dxlGains[i][j].velocity_i_gain  < 0) continue;
           if(dxlGains[i][j].velocity_p_gain  < 0) continue;
-          std::cout << "positionGain" <<std::endl;
-          dxlDevice[i].setPositionGain(j,dxlGains[i][j].position_p_gain,&err);
+           dxlDevice[i].setPositionGain(j,dxlGains[i][j].position_p_gain,&err);
           nanosleep(&tim,NULL);
 
           dxlDevice[i].setVelocityGain(j,dxlGains[i][j].velocity_i_gain,dxlGains[i][j].velocity_p_gain, &err);
@@ -279,6 +289,8 @@ void motion_init_proc(bool *isDone)
           for(int j=0;j<dxlDevice[i].getMotorNum(); j++)
           {
                 dxlDevice[i][j].aim_radian = dxlDevice[i][j].position_rad();
+
+              //  std::cout << "device" << (double)dxlDevice[i][j].aim_radian << std::endl;
           }
       *isDone = true;
 }

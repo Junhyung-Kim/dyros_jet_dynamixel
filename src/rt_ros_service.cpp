@@ -159,6 +159,7 @@ void* publisher_proc(void *arg)
         {
             for(j=0;j<nDXLCount[i];j++)
             {
+               //  std::cout << "position" << dxlDevice[3][j].position_rad() << std::endl;
                 // SI
                 pObj->pubState.msg_.angle[_cnt] = dxlDevice[i][j].position_rad();
                 pObj->pubState.msg_.velocity[_cnt] = dxlDevice[i][j].velocity_radsec();
