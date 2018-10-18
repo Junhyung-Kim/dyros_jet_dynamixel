@@ -374,7 +374,8 @@
         while(1)
         {
           if(pDynamixelObj->bControlLoopEnable)
-          { int a = get_real_time();
+          {
+            int a = get_real_time();
           //  std::cout << "wait" << (int)a << std::endl;
            // std::cout << "motornum" << motorNum << std::endl;
             dynamixel_packet::wait_period(&info3);
@@ -382,15 +383,6 @@
             pDynamixelObj->LoopStartTime = get_real_time();
             pDynamixelObj->LoopTimeoutTime = pDynamixelObj->LoopStartTime + 4.7; //4.7ms
 //
-            if(motorNum == 7)
-            {
-              for(i=0;i<motorNum;i++)
-              {
-                pdRadians[i] = (*pDynamixelObj).vMotorData[i].aim_radian;
-               // std::cout << "pdRadians" << pdRadians[i] << std::endl;
-
-              }
-            }
 //
          if(pDynamixelObj->bControlWriteEnable)
           {

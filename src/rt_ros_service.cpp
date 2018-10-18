@@ -19,7 +19,7 @@ RTROSPublisher::RTROSPublisher(ros::NodeHandle &nh)
     pubState.msg_.updated.resize(nTotalMotors);
     std::cout << "nTotalMotors" << nTotalMotors << std::endl;
     int _cnt=0;
-    for(int i=0;i<4;i++)
+    for(int i=0;i<8;i++)
         for(int j=0;j<nDXLCount[i];j++)
         {
            pubState.msg_.id[_cnt++] = dxlLists[i][j].id;
@@ -54,34 +54,32 @@ bool RTROSMotorSettingService::modeSwitch(rt_dynamixel_msgs::ModeSettingRequest 
     switch (req.mode)
     {
     case rt_dynamixel_msgs::ModeSettingRequest::CONTROL_RUN:
-        for(int i=0;i<4;i++)
+        for(int i=0;i<8;i++)
         {
-          std::cout << "when??" << std::endl;
             dxlDevice[i].bControlWriteEnable = true;
         }
         res.result =  rt_dynamixel_msgs::ModeSettingRequest::CONTROL_RUN;
         break;
 
     case rt_dynamixel_msgs::ModeSettingRequest::DISABLE:
-        for(int i=0;i<4;i++)
+        for(int i=0;i<8;i++)
         {
             dxlDevice[i].bControlWriteEnable = false;
         }
-
         // wait for process end
-        for(int i=0;i<4;i++)
+        for(int i=0;i<8;i++)
             while(dxlDevice[i].bControlLoopProcessing) {}
         res.result =  rt_dynamixel_msgs::ModeSettingRequest::DISABLE;
         break;
 
     case rt_dynamixel_msgs::ModeSettingRequest::SETTING:
-        for(int i=0;i<4;i++)
+        for(int i=0;i<8;i++)
         {
             dxlDevice[i].bControlWriteEnable = false;
         }
 
         // wait for process end
-        for(int i=0;i<4;i++)
+        for(int i=0;i<8;i++)
             while(dxlDevice[i].bControlLoopProcessing) {}
         res.result =  rt_dynamixel_msgs::ModeSettingRequest::SETTING;
 
@@ -100,11 +98,11 @@ bool RTROSMotorSettingService::motorSet(rt_dynamixel_msgs::MotorSettingRequest &
 {
   std::cout << "Motorset" << std::endl;
 
-    for(int i=0; i<4; i++)
+    for(int i=0; i<8; i++)
     {
         dxlDevice[i].bControlLoopEnable = false;
     }
-    for(int i=0; i<4; i++)
+    for(int i=0; i<8; i++)
     {
         while(dxlDevice[i].bControlLoopProcessing) {}
     }
@@ -127,8 +125,7 @@ bool RTROSMotorSettingService::motorSet(rt_dynamixel_msgs::MotorSettingRequest &
 
     res = motorResponse;
     //res.result = req.mode;
- std::cout << "Motorsetend" << std::endl;
-    for(int i=0; i<4; i++)
+    for(int i=0; i<8; i++)
     {
         dxlDevice[i].bControlLoopEnable = true;
     }
@@ -147,15 +144,13 @@ void* publisher_proc(void *arg)
     while (1)
     {
          dynamixel_packet::wait_period(&info1); //wait for next cycle
-
         // Data set
-        for(i=0;i<4;i++)
+        for(i=0;i<8;i++)
         {
             dxlDevice[i].mutex_acquire();
         }
-
         int _cnt = 0;
-        for(i=0;i<4;i++)
+        for(i=0;i<8;i++)
         {
             for(j=0;j<nDXLCount[i];j++)
             {
@@ -169,7 +164,7 @@ void* publisher_proc(void *arg)
             }
         }
 
-        for(i=0;i<4;i++)
+        for(i=0;i<8;i++)
         {
             dxlDevice[i].mutex_release();
         }
@@ -191,12 +186,11 @@ void* subscribe_proc(void *arg)
     {
         dynamixel_packet::wait_period(&info2); //wait for next cycle
         rt_dynamixel_msgs::JointSetConstPtr rcvMsg = rtsub->recMsg;
-   //     std::cout << "jointtask" << rcvMsg << std::endl;
-        if(rcvMsg) // if message recieved ( if not rcvMsg == NULL )
+       if(rcvMsg) // if message recieved ( if not rcvMsg == NULL )
         {
             // Data set
             // ROS_INFO("Sub ")
-            for(i=0;i<4;i++)
+            for(i=0;i<8;i++)
             {
                 dxlDevice[i].mutex_acquire();
             }
@@ -208,8 +202,7 @@ void* subscribe_proc(void *arg)
                     dxl_from_id(rcvMsg->id[i]).aim_radian = rcvMsg->angle[i];
                 }
             }
-
-            for(i=0;i<4;i++)
+            for(i=0;i<8;i++)
             {
                 dxlDevice[i].mutex_release();
             }
@@ -229,7 +222,7 @@ void* motor_set_proc(void *arg)
     switch (pObj->motorRequest.mode)
     {
     case rt_dynamixel_msgs::MotorSettingRequest::SET_TORQUE_ENABLE:
-        for (int i=0; i<4; i++)
+        for (int i=0; i<8; i++)
         {
           std::cout << "ssww" << pObj->motorRequest.value <<  std::endl;
 
