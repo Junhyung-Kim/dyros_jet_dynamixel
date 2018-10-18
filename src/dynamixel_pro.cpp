@@ -181,7 +181,7 @@
         vMotorData[k].velocity = groupstatread.getData(vMotorData[k].id,pres_pos+4,size_4);
         vMotorData[k].current = groupstatread.getData(vMotorData[k].id,pres_pos+4+4+2,size_2);
         vMotorData[k].updated =groupstatread.getError(vMotorData[k].id, error1);
-        std::cout <<"Position" << vMotorData[k].position <<std::endl;
+     //    std::cout <<"Position" << vMotorData[k].position <<std::endl;
       }
       for (; k<nMotorNum; k++)
       {
@@ -409,7 +409,7 @@
               }
             //  std::cout << "motornum" << motorNum <<" pdRadians" << pdRadians[1] << std::endl;
               pDynamixelObj->mutex_release();
-            //  pDynamixelObj->setEachRadian(pdRadians);
+             pDynamixelObj->setEachRadian(pdRadians);
           }
            pDynamixelObj->getAllStatus();
            pDynamixelObj->bControlLoopProcessing = false;
