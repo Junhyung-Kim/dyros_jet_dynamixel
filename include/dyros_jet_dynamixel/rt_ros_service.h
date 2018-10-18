@@ -19,10 +19,10 @@
 using namespace DXL_PRO;
 
 // global ----------------------------------------------
-extern DynamixelPro dxlDevice[4];
+extern DynamixelPro dxlDevice[8];
 
 extern int nTotalMotors;
-extern int nDXLCount[4];
+extern int nDXLCount[8];
 extern dxl_inverse dxlID2Addr[60]; // max ID = 50,
 
 extern dxl_pro_data& dxl_from_id(int id);

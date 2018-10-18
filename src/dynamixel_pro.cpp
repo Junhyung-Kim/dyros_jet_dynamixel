@@ -369,35 +369,23 @@
       dynamixel_packet::make_periodic(5000, &info3);
 
       int a = get_real_time();
-    //  std::cout << "wait" << a << std::endl;
 
         while(1)
         {
           if(pDynamixelObj->bControlLoopEnable)
           {
             int a = get_real_time();
-          //  std::cout << "wait" << (int)a << std::endl;
-           // std::cout << "motornum" << motorNum << std::endl;
             dynamixel_packet::wait_period(&info3);
             pDynamixelObj->bControlLoopProcessing = true;
             pDynamixelObj->LoopStartTime = get_real_time();
             pDynamixelObj->LoopTimeoutTime = pDynamixelObj->LoopStartTime + 4.7; //4.7ms
 //
-//
          if(pDynamixelObj->bControlWriteEnable)
           {
-           //std::cout << "pdRadians_prev" << pdRadians[0] << std::endl;
-
               pDynamixelObj->mutex_acquire();
               for(i=0;i<motorNum;i++)
               {
                 pdRadians[i] = (*pDynamixelObj).vMotorData[i].aim_radian;
-                if(motorNum == 4)
-                {
-                    pdRadians[i] = (*pDynamixelObj).vMotorData[i].aim_radian;
-                    std::cout << "pdRadians" << pdRadians[i] << std::endl;
-
-                }
               }
             //  std::cout << "motornum" << motorNum <<" pdRadians" << pdRadians[1] << std::endl;
               pDynamixelObj->mutex_release();

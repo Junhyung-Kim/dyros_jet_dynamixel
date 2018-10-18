@@ -21,35 +21,43 @@ dxl_pro_data dxlLists[4][10] = {
     }
 };   // Max 4channels, 10 motors
 #else
-dxl_pro_data dxlLists[4][10] = {
+dxl_pro_data dxlLists[8][10] = {
     {
         // Index: 0: 1-Right Upper body
         {1, H54},
         {3, H54},
         {5, H54},
         {7, H54},
+
+    },     {
+
         {9, H54},
         {11, H42}, // Warning
         {13, H42},
 
-
-    },    {
+    },     {
         // Index: 1: 2-Left Upper body
         {2, H54},
         {4, H54},
         {6, H54},
         {8, H54},
+
+    },     {
+
         {10, H54},
         {12, H42},
         {14, H42},
         {32, H42},
 
-    },    {
+    },     {
         // Index: 2: 3-Right Lower body
         {15, H54},    // Fatal
         {17, H54},    // Fatal
         {19, H54},    // Warning
         {21, H54},    // Warning
+
+    },     {
+
         {23, H54},
         {25, H54},
         {27, H54}
@@ -60,6 +68,9 @@ dxl_pro_data dxlLists[4][10] = {
         {18, H54},
         {20, H54},
         {22, H54},
+
+    },    {
+
         {24, H54},
         {26, H54},
         {28, H54},
@@ -68,58 +79,74 @@ dxl_pro_data dxlLists[4][10] = {
 };   // Max 4channels, 10 motors
 #endif
 // Position P, Velocity P, Velocity I
-dxl_gains dxlGains[4][10] =
+dxl_gains dxlGains[8][10] =
 {
     {
         // Index: 0
-
         {1, 30,256,10},
         {3, 30,256,10},
         {5, 30,256,10},
         {7, 30,256,10},
+
+    },    {
+
         {9, 30,256,10},
         {11, 30,256,10},
         {13, 30,256,10},
        //{31, 15,-1,-1}
+
     },    {
         // Index: 1
         {2, 30,256,10},
         {4, 30,256,10},
         {6, 30,256,10},
         {8, 30,256,10},
+
+    },    {
+
         {10, 30,256,10},
         {12, 30,256,10},
         {14, 30,256,10},
         {32, 30,256,10}
+
     },    {
+
         {15,32,500,10},
         {17,32,500,0},
         {19, 32,500,0},
         {21, 32,500,0},
+
+    },    {
+
         {23, 32,500,0},
         {25, 32,500,0},
         {27, 64,500,20},
+
     },    {
         // Index: 3
         {16, 32,500,10},
         {18, 32,500,0},
         {20, 32,500,0},
         {22, 32,500,0},
+
+    },    {
+
         {24, 32,500,0},
         {26, 32,500,0},
         {28, 32,500,20},
-  }
+
+    }
 };
 
 int nTotalMotors;
-int nDXLCount[4] = {0, };
+int nDXLCount[8] = {0, };
 dxl_inverse dxlID2Addr[60] = {0, };
-DynamixelPro dxlDevice[4] = {0, 1, 2, 3};
+DynamixelPro dxlDevice[8] = {0, 1, 2, 3, 4, 5, 6, 7};
 
 void make_dxl_count()
 {
     int i,j;
-    for(i=0;i<4;i++)
+    for(i=0;i<8;i++)
     {
         for(j=0;j<10;j++)
         {
@@ -139,7 +166,7 @@ void make_inverse_access_data()
         dxlID2Addr[i].channel = -1;
         dxlID2Addr[i].index = -1;
     }
-    for(i=0;i<4;i++)
+    for(i=0;i<8;i++)
     {
         for(j=0;j<nDXLCount[i];j++)
         {
@@ -157,11 +184,15 @@ bool dxl_initailize()
     dxlDevice[1].ComPort->setPortName("/dev/ttyCTI1");
     dxlDevice[2].ComPort->setPortName("/dev/ttyCTI2");
     dxlDevice[3].ComPort->setPortName("/dev/ttyCTI3");
+    dxlDevice[4].ComPort->setPortName("/dev/ttyCTI4");
+    dxlDevice[5].ComPort->setPortName("/dev/ttyCTI5");
+    dxlDevice[6].ComPort->setPortName("/dev/ttyCTI6");
+    dxlDevice[7].ComPort->setPortName("/dev/ttyCTI7");
 
     int i;
     bool error = 0;
 
-    for(i=0; i<4;i++)
+    for(i=0;i<8;i++)
     {
        dxlDevice[i].setIDList(nDXLCount[i], dxlLists[i]);
        error = dxlDevice[i].Connect();
@@ -200,9 +231,9 @@ bool dynamixel_motor_init()
 void motion_init_proc(bool *isDone)
 {
   *isDone = true;
-  bool isUpdateComplete[4] = {false, };
+  bool isUpdateComplete[8] = {false, };
   int error;
-  int nRecv[4] = {0, };
+  int nRecv[8] = {0, };
   struct timespec tim, tim1, tim2; //5E6 = 5MS
   tim.tv_sec = 0;
   tim.tv_nsec = 5000000;
@@ -213,7 +244,7 @@ void motion_init_proc(bool *isDone)
 
   for(int c=0; c<2; c++) //2
   {
-    for(int i=0; i<4; i++) //4
+    for(int i=0; i<8; i++) //4
     {
       dxlDevice[i].setReturnDelayTime(0);
       nanosleep(&tim,NULL);
@@ -245,7 +276,7 @@ void motion_init_proc(bool *isDone)
       }
     }
   }
-  for(int i=0;i<4;i++) //4
+  for(int i=0;i<8;i++) //4
       {
           dxlDevice[i].setStatusReturn();
           ROS_INFO("chennal... %d",i);
@@ -266,7 +297,7 @@ void motion_init_proc(bool *isDone)
       }
 
   // check all motor read
-      for(int i=0;i<4;i++)
+      for(int i=0;i<8;i++)
           if(isUpdateComplete[i] == false)
           {
             *isDone = false;
@@ -274,7 +305,7 @@ void motion_init_proc(bool *isDone)
           }
 
       // Update all radian angle
-      for(int i=0;i<4; i++)
+      for(int i=0;i<8; i++)
           for(int j=0;j<dxlDevice[i].getMotorNum(); j++)
           {
                 dxlDevice[i][j].aim_radian = dxlDevice[i][j].position_rad();
